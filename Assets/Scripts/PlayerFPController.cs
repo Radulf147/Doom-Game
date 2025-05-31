@@ -5,109 +5,121 @@ public class PlayerFPController : MonoBehaviour
 {
     public float moveSpeed = 7.5f;
     public float jumpSpeed = 8.0f;
-    public float gravity = 10000.0f;
+    // A vari√°vel 'gravity' original foi removida.
+
+    [Header("Jump and Gravity Settings")]
+    public float upwardGravity = 25.0f;      // Gravidade aplicada enquanto o jogador est√° subindo no pulo.
+    public float downwardGravity = 40.0f;    // Gravidade mais forte aplicada quando o jogador est√° caindo.
+    public float earlyJumpReleaseMultiplier = 1.5f; // Multiplicador para cair mais r√°pido se soltar o pulo cedo.
+    public float groundedGravity = 10.0f;     // Pequena for√ßa para baixo para manter o jogador "colado" ao ch√£o.
+
+    private float _verticalVelocity = 0f;     // Vari√°vel interna para armazenar a velocidade vertical atual
 
     [Header("Mouse Look Settings")]
-    public Transform playerCameraTransform; // <<< ADICIONADO: Arraste sua Main Camera (filha deste objeto) aqui
+    public Transform playerCameraTransform;
     public float lookSpeed = 2.0f;
-    public float lookXLimit = 60.0f; // Limite de rotaÁ„o vertical (para n„o dar loop)
+    public float lookXLimit = 60.0f;
 
     CharacterController characterController;
-    Vector3 moveDirection = Vector3.zero;
-    float rotationX = 0; // Vari·vel para acumular a rotaÁ„o vertical da c‚mera
+    // Vector3 moveDirection = Vector3.zero; // _verticalVelocity e horizontalInput v√£o cuidar disso
+    float rotationX = 0;
 
     [HideInInspector]
-    public bool canMove = true; // Para travar o movimento se necess·rio (ex: menu)
+    public bool canMove = true;
 
     void Start()
     {
         characterController = GetComponent<CharacterController>();
 
-        // Travar cursor no centro da tela e escondÍ-lo
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        // ValidaÁ„o para garantir que a c‚mera foi atribuÌda
         if (playerCameraTransform == null)
         {
-            // Tenta encontrar a c‚mera automaticamente se for filha direta e tiver o componente Camera
             Camera childCam = GetComponentInChildren<Camera>();
             if (childCam != null)
             {
                 playerCameraTransform = childCam.transform;
-                Debug.LogWarning("PlayerFPController: 'playerCameraTransform' n„o foi atribuÌdo no Inspector. C‚mera filha encontrada e atribuÌda automaticamente. Para evitar problemas, È recomendado atribuir manualmente.");
+                Debug.LogWarning("PlayerFPController: 'playerCameraTransform' n√£o foi atribu√≠do no Inspector. C√¢mera filha encontrada e atribuÔøΩda automaticamente. Para evitar problemas, √© recomendado atribuir manually.");
             }
             else
             {
-                Debug.LogError("PlayerFPController: 'playerCameraTransform' n„o foi atribuÌdo no Inspector e nenhuma c‚mera filha foi encontrada! A rotaÁ„o vertical do mouse n„o funcionar· corretamente. Por favor, atribua a c‚mera filha.");
+                Debug.LogError("PlayerFPController: 'playerCameraTransform' n√£o foi atribu√≠do no Inspector e nenhuma cÔøΩmera filha foi encontrada! A rota√ß√£o vertical do mouse n√£o funcionarÔøΩ corretamente. Por favor, atribua a cÔøΩmera filha.");
             }
         }
     }
 
     void Update()
     {
-        // --- MovimentaÁ„o ---
-        // Verifica se pode se mover antes de processar inputs de movimento
-        float curSpeedX = 0;
-        float curSpeedY = 0;
-
+        // --- Movimenta√ß√£o Horizontal ---
+        Vector3 horizontalInput = Vector3.zero; 
         if (canMove)
         {
-            // MantÈm a direÁ„o local do jogador
             Vector3 forward = transform.TransformDirection(Vector3.forward);
             Vector3 right = transform.TransformDirection(Vector3.right);
-
-            curSpeedX = moveSpeed * Input.GetAxis("Vertical");   // W/S para frente/tr·s
-            curSpeedY = moveSpeed * Input.GetAxis("Horizontal"); // A/D para esquerda/direita
-            moveDirection = (forward * curSpeedX) + (right * curSpeedY);
+            
+            float curSpeedX = moveSpeed * Input.GetAxis("Vertical");    // W/S para frente/tr√°s
+            float curSpeedZ = moveSpeed * Input.GetAxis("Horizontal");  // A/D para esquerda/direita
+            horizontalInput = (forward * curSpeedX) + (right * curSpeedZ);
         }
-        else
+
+        // --- L√≥gica Vertical (Pulo e Gravidade) ---
+        if (characterController.isGrounded)
         {
-            // Zera o movimento se canMove for false, exceto para a gravidade/pulo
-            moveDirection.x = 0;
-            moveDirection.z = 0;
+            _verticalVelocity = -groundedGravity * Time.deltaTime; // Mant√©m colado ao ch√£o
+
+            if (Input.GetButtonDown("Jump") && canMove)
+            {
+                _verticalVelocity = jumpSpeed; // Impulso inicial do pulo
+            }
         }
-
-
-        float movementDirectionY = moveDirection.y; // Salva a velocidade vertical atual (para pulo/queda)
-
-
-        // --- Pulo ---
-        if (Input.GetButton("Jump") && canMove && characterController.isGrounded)
+        else // No ar
         {
-            moveDirection.y = jumpSpeed;
-        }
-        else
-        {
-            moveDirection.y = movementDirectionY; // MantÈm a velocidade vertical (ex: se j· estiver caindo)
+            // Se o jogador soltou o bot√£o de pulo cedo enquanto ainda estava subindo
+            // E pode se mover (para n√£o cortar o pulo se o movimento estiver travado por um menu, por exemplo)
+            if (_verticalVelocity > 0 && !Input.GetButton("Jump") && canMove) 
+            {
+                // Aplica gravidade mais forte para "cortar" o pulo
+                _verticalVelocity -= upwardGravity * earlyJumpReleaseMultiplier * Time.deltaTime;
+            }
+            // Aplicar gravidade diferenciada normal (subida ou descida)
+            else if (_verticalVelocity < 0) // J√° est√° descendo
+            {
+                _verticalVelocity -= downwardGravity * Time.deltaTime;
+            }
+            else // Ainda est√° subindo (e segurando o pulo, ou a op√ß√£o de soltar cedo n√£o ativou)
+            {
+                _verticalVelocity -= upwardGravity * Time.deltaTime;
+            }
         }
 
-        // Aplicar gravidade (apenas se n„o estiver no ch„o)
-        if (!characterController.isGrounded)
-        {
-            moveDirection.y -= gravity * Time.deltaTime;
-        }
+        // Construir o vetor de movimento final combinando horizontal e vertical
+        Vector3 finalMove = horizontalInput;
+        finalMove.y = _verticalVelocity;
 
         // Aplicar movimento ao Character Controller
-        characterController.Move(moveDirection * Time.deltaTime);
+        characterController.Move(finalMove * Time.deltaTime);
 
-        // --- RotaÁ„o (Mouse Look) ---
-        if (canMove && playerCameraTransform != null) // SÛ rotaciona se puder mover E a c‚mera estiver atribuÌda
+        // --- Rota√ß√£o (Mouse Look) ---
+        if (canMove && playerCameraTransform != null) 
         {
-            // RotaÁ„o Vertical (Pitch) - Aplicada ‡ C¬MERA FILHA
             rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
             rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
-            playerCameraTransform.localRotation = Quaternion.Euler(rotationX, 0, 0); // <<< MODIFICADO: Aplica apenas ‡ c‚mera
-
-            // RotaÁ„o Horizontal (Yaw) - Aplicada ao CharacterController/Player (este objeto)
-            transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * lookSpeed); // <<< MANTIDO: Gira o corpo do jogador
+            playerCameraTransform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+            transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * lookSpeed);
         }
 
-        // Pressione Esc para destravar o cursor (para desenvolvimento)
+        // --- Cursor ---
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
+        // Opcional: L√≥gica para re-travar o cursor, por exemplo, ao clicar na tela
+        // if (Input.GetMouseButtonDown(0) && Cursor.lockState == CursorLockMode.None && canMove)
+        // {
+        //     Cursor.lockState = CursorLockMode.Locked;
+        //     Cursor.visible = false;
+        // }
     }
 }
