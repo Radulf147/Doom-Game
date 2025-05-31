@@ -3,9 +3,10 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerFPController : MonoBehaviour
 {
+    [Header("Movement Settings")]
     public float moveSpeed = 7.5f;
+    public float sprintSpeed = 12.0f; // Velocidade ao correr
     public float jumpSpeed = 8.0f;
-    // A variável 'gravity' original foi removida.
 
     [Header("Jump and Gravity Settings")]
     public float upwardGravity = 25.0f;      // Gravidade aplicada enquanto o jogador está subindo no pulo.
@@ -18,29 +19,31 @@ public class PlayerFPController : MonoBehaviour
     [Header("Mouse Look Settings")]
     public Transform playerCameraTransform;
     public float lookSpeed = 2.0f;
-    public float lookXLimit = 60.0f;
+    public float lookXLimit = 60.0f; // Limite de rotação vertical (para não dar loop)
 
     CharacterController characterController;
-    // Vector3 moveDirection = Vector3.zero; // _verticalVelocity e horizontalInput vão cuidar disso
-    float rotationX = 0;
+    float rotationX = 0; // Variável para acumular a rotação vertical da câmera
 
     [HideInInspector]
-    public bool canMove = true;
+    public bool canMove = true; // Para travar o movimento se necessário (ex: menu)
 
     void Start()
     {
         characterController = GetComponent<CharacterController>();
 
+        // Travar cursor no centro da tela e escondê-lo
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
+        // Validação para garantir que a câmera foi atribuída
         if (playerCameraTransform == null)
         {
+            // Tenta encontrar a câmera automaticamente se for filha direta e tiver o componente Camera
             Camera childCam = GetComponentInChildren<Camera>();
             if (childCam != null)
             {
                 playerCameraTransform = childCam.transform;
-                Debug.LogWarning("PlayerFPController: 'playerCameraTransform' não foi atribuído no Inspector. Câmera filha encontrada e atribu�da automaticamente. Para evitar problemas, é recomendado atribuir manually.");
+                Debug.LogWarning("PlayerFPController: 'playerCameraTransform' não foi atribuído no Inspector. Câmera filha encontrada e atribuída automaticamente. Para evitar problemas, é recomendado atribuir manualmente.");
             }
             else
             {
@@ -55,12 +58,21 @@ public class PlayerFPController : MonoBehaviour
         Vector3 horizontalInput = Vector3.zero; 
         if (canMove)
         {
+            float currentSpeedToUse = moveSpeed; // Começa com a velocidade normal de caminhada
+
+            // Verifica se a tecla Shift Esquerdo está pressionada para correr
+            if (Input.GetKey(KeyCode.LeftShift)) 
+            {
+                currentSpeedToUse = sprintSpeed; // Se sim, muda para a velocidade de corrida
+            }
+
             Vector3 forward = transform.TransformDirection(Vector3.forward);
             Vector3 right = transform.TransformDirection(Vector3.right);
             
-            float curSpeedX = moveSpeed * Input.GetAxis("Vertical");    // W/S para frente/trás
-            float curSpeedZ = moveSpeed * Input.GetAxis("Horizontal");  // A/D para esquerda/direita
-            horizontalInput = (forward * curSpeedX) + (right * curSpeedZ);
+            // Usa currentSpeedToUse para calcular o deslocamento
+            float effectiveForwardInput = currentSpeedToUse * Input.GetAxis("Vertical");    // W/S para frente/trás
+            float effectiveStrafeInput = currentSpeedToUse * Input.GetAxis("Horizontal");  // A/D para esquerda/direita
+            horizontalInput = (forward * effectiveForwardInput) + (right * effectiveStrafeInput);
         }
 
         // --- Lógica Vertical (Pulo e Gravidade) ---
@@ -68,9 +80,10 @@ public class PlayerFPController : MonoBehaviour
         {
             _verticalVelocity = -groundedGravity * Time.deltaTime; // Mantém colado ao chão
 
+            // Pulo: Usa GetButtonDown para que o pulo seja um impulso único por aperto de botão.
             if (Input.GetButtonDown("Jump") && canMove)
             {
-                _verticalVelocity = jumpSpeed; // Impulso inicial do pulo
+                _verticalVelocity = jumpSpeed; // Define a velocidade vertical inicial do pulo
             }
         }
         else // No ar
@@ -87,7 +100,7 @@ public class PlayerFPController : MonoBehaviour
             {
                 _verticalVelocity -= downwardGravity * Time.deltaTime;
             }
-            else // Ainda está subindo (e segurando o pulo, ou a opção de soltar cedo não ativou)
+            else // Ainda está subindo (e segurando o pulo, ou a opção de soltar cedo não ativou/não está sendo usada)
             {
                 _verticalVelocity -= upwardGravity * Time.deltaTime;
             }
@@ -103,13 +116,17 @@ public class PlayerFPController : MonoBehaviour
         // --- Rotação (Mouse Look) ---
         if (canMove && playerCameraTransform != null) 
         {
+            // Rotação Vertical (Pitch) - Aplicada à CÂMERA FILHA
             rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
             rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
             playerCameraTransform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+
+            // Rotação Horizontal (Yaw) - Aplicada ao CharacterController/Player (este objeto)
             transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * lookSpeed);
         }
 
         // --- Cursor ---
+        // Pressione Esc para destravar o cursor (para desenvolvimento)
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Cursor.lockState = CursorLockMode.None;
