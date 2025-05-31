@@ -21,6 +21,17 @@ public class PlayerFPController : MonoBehaviour
     public float lookSpeed = 2.0f;
     public float lookXLimit = 60.0f; // Limite de rotação vertical (para não dar loop)
 
+    [Header("Footstep Sound Settings")]
+    public AudioClip footstepSound; // Arraste seu arquivo "Andar_na_terra" aqui
+    public float walkStepInterval = 0.6f;  // Tempo entre os passos ao andar
+    public float sprintStepInterval = 0.35f; // Tempo entre os passos ao correr
+    public float walkPitch = 1.0f;         // Tom do som ao andar
+    public float sprintPitch = 1.3f;       // Tom do som ao correr (um pouco mais agudo/rápido)
+    
+    private AudioSource footstepAudioSource;
+    private float stepTimer = 0f;
+    private float _currentAppliedSpeed = 0f; // Para sabermos a velocidade atual e decidir o som do passo
+
     CharacterController characterController;
     float rotationX = 0; // Variável para acumular a rotação vertical da câmera
 
@@ -30,15 +41,22 @@ public class PlayerFPController : MonoBehaviour
     void Start()
     {
         characterController = GetComponent<CharacterController>();
+        
+        footstepAudioSource = GetComponent<AudioSource>(); 
+        if (footstepAudioSource == null)
+        {
+            Debug.LogWarning("PlayerFPController: Nenhum AudioSource principal encontrado para passos. Adicionando um novo e configurando para 3D...");
+            footstepAudioSource = gameObject.AddComponent<AudioSource>();
+        }
+        footstepAudioSource.playOnAwake = false;
+        footstepAudioSource.loop = false;
+        footstepAudioSource.spatialBlend = 1.0f; 
 
-        // Travar cursor no centro da tela e escondê-lo
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        // Validação para garantir que a câmera foi atribuída
         if (playerCameraTransform == null)
         {
-            // Tenta encontrar a câmera automaticamente se for filha direta e tiver o componente Camera
             Camera childCam = GetComponentInChildren<Camera>();
             if (childCam != null)
             {
@@ -54,89 +72,112 @@ public class PlayerFPController : MonoBehaviour
 
     void Update()
     {
-        // --- Movimentação Horizontal ---
-        Vector3 horizontalInput = Vector3.zero; 
+        Vector3 horizontalInputVector = Vector3.zero; 
+        _currentAppliedSpeed = 0f; 
+
         if (canMove)
         {
-            float currentSpeedToUse = moveSpeed; // Começa com a velocidade normal de caminhada
-
-            // Verifica se a tecla Shift Esquerdo está pressionada para correr
+            float actualSpeedForFrame = moveSpeed; 
             if (Input.GetKey(KeyCode.LeftShift)) 
             {
-                currentSpeedToUse = sprintSpeed; // Se sim, muda para a velocidade de corrida
+                actualSpeedForFrame = sprintSpeed; 
             }
 
             Vector3 forward = transform.TransformDirection(Vector3.forward);
             Vector3 right = transform.TransformDirection(Vector3.right);
             
-            // Usa currentSpeedToUse para calcular o deslocamento
-            float effectiveForwardInput = currentSpeedToUse * Input.GetAxis("Vertical");    // W/S para frente/trás
-            float effectiveStrafeInput = currentSpeedToUse * Input.GetAxis("Horizontal");  // A/D para esquerda/direita
-            horizontalInput = (forward * effectiveForwardInput) + (right * effectiveStrafeInput);
+            float forwardInputAxis = Input.GetAxis("Vertical");    
+            float strafeInputAxis = Input.GetAxis("Horizontal");  
+
+            horizontalInputVector = (forward * forwardInputAxis) + (right * strafeInputAxis);
+
+            if (horizontalInputVector.sqrMagnitude > 0.01f) 
+            {
+                horizontalInputVector.Normalize(); 
+                horizontalInputVector *= actualSpeedForFrame; 
+                _currentAppliedSpeed = actualSpeedForFrame; 
+            }
         }
 
-        // --- Lógica Vertical (Pulo e Gravidade) ---
         if (characterController.isGrounded)
         {
-            _verticalVelocity = -groundedGravity * Time.deltaTime; // Mantém colado ao chão
-
-            // Pulo: Usa GetButtonDown para que o pulo seja um impulso único por aperto de botão.
+            _verticalVelocity = -groundedGravity * Time.deltaTime; 
             if (Input.GetButtonDown("Jump") && canMove)
             {
-                _verticalVelocity = jumpSpeed; // Define a velocidade vertical inicial do pulo
+                _verticalVelocity = jumpSpeed; 
             }
         }
-        else // No ar
+        else 
         {
-            // Se o jogador soltou o botão de pulo cedo enquanto ainda estava subindo
-            // E pode se mover (para não cortar o pulo se o movimento estiver travado por um menu, por exemplo)
             if (_verticalVelocity > 0 && !Input.GetButton("Jump") && canMove) 
             {
-                // Aplica gravidade mais forte para "cortar" o pulo
                 _verticalVelocity -= upwardGravity * earlyJumpReleaseMultiplier * Time.deltaTime;
             }
-            // Aplicar gravidade diferenciada normal (subida ou descida)
-            else if (_verticalVelocity < 0) // Já está descendo
+            else if (_verticalVelocity < 0) 
             {
                 _verticalVelocity -= downwardGravity * Time.deltaTime;
             }
-            else // Ainda está subindo (e segurando o pulo, ou a opção de soltar cedo não ativou/não está sendo usada)
+            else 
             {
                 _verticalVelocity -= upwardGravity * Time.deltaTime;
             }
         }
 
-        // Construir o vetor de movimento final combinando horizontal e vertical
-        Vector3 finalMove = horizontalInput;
+        // --- Lógica dos Sons de Passos --- MODIFICADA ABAIXO ---
+        bool isActuallyMovingOnGround = characterController.isGrounded && _currentAppliedSpeed > 0.01f && canMove;
+
+        if (isActuallyMovingOnGround)
+        {
+            stepTimer -= Time.deltaTime;
+            if (stepTimer <= 0f)
+            {
+                PlayFootstepSound();
+                bool isSprintingNow = (_currentAppliedSpeed == sprintSpeed);
+                stepTimer = isSprintingNow ? sprintStepInterval : walkStepInterval; 
+            }
+        }
+        else
+        {
+            // Se não está se movendo (ou está no ar, ou canMove é false),
+            // resetamos o stepTimer para 0.
+            // Isso fará com que o primeiro passo seja imediato ao começar a andar de novo.
+            stepTimer = 0f; // <<< ALTERAÇÃO PARA CORRIGIR O DELAY INICIAL DO SOM
+        }
+
+        Vector3 finalMove = horizontalInputVector; 
         finalMove.y = _verticalVelocity;
 
-        // Aplicar movimento ao Character Controller
         characterController.Move(finalMove * Time.deltaTime);
 
-        // --- Rotação (Mouse Look) ---
         if (canMove && playerCameraTransform != null) 
         {
-            // Rotação Vertical (Pitch) - Aplicada à CÂMERA FILHA
             rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
             rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
             playerCameraTransform.localRotation = Quaternion.Euler(rotationX, 0, 0);
-
-            // Rotação Horizontal (Yaw) - Aplicada ao CharacterController/Player (este objeto)
             transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * lookSpeed);
         }
 
-        // --- Cursor ---
-        // Pressione Esc para destravar o cursor (para desenvolvimento)
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
-        // Opcional: Lógica para re-travar o cursor, por exemplo, ao clicar na tela
         // if (Input.GetMouseButtonDown(0) && Cursor.lockState == CursorLockMode.None && canMove)
         // {
         //     Cursor.lockState = CursorLockMode.Locked;
         //     Cursor.visible = false;
         // }
+    }
+
+    void PlayFootstepSound()
+    {
+        if (footstepAudioSource == null || footstepSound == null)
+        {
+            return; 
+        }
+
+        bool isSprinting = (_currentAppliedSpeed == sprintSpeed);
+        footstepAudioSource.pitch = isSprinting ? sprintPitch : walkPitch;
+        footstepAudioSource.PlayOneShot(footstepSound);
     }
 }
