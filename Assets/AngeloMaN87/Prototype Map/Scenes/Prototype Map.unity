@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 75856384}
   - component: {fileID: 75856383}
   - component: {fileID: 75856382}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: marcacaoDoJogador
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -741,7 +741,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.39215687, b: 0, a: 1}
+  m_Color: {r: 0.8627451, g: 0.8627451, b: 0.8627451, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -868,7 +868,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 119
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: 27097eb221a2b3f4dad7021218cc3fff, type: 2}
   m_TargetDisplay: 0
@@ -918,7 +918,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1079100190}
   - component: {fileID: 1079100191}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: SpriteArmaFP
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1305,7 +1305,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 183
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -1344,7 +1344,7 @@ GameObject:
   - component: {fileID: 1707099812}
   - component: {fileID: 1707099814}
   - component: {fileID: 1707099813}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
