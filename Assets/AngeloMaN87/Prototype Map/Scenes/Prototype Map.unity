@@ -1957,7 +1957,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 995856464}
-  - component: {fileID: 995856463}
+  - component: {fileID: 995856465}
   m_Layer: 0
   m_Name: EmissorChuvaJogador
   m_TagString: Untagged
@@ -1965,31 +1965,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &995856463
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 995856462}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c74a7fa7bead79d4987c4989ca1a046f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  particlePrefab: {fileID: 1135073677811616632, guid: d3545539caa12024bb70531771dbbf89, type: 3}
-  playerTransform: {fileID: 211476397}
-  emissionRate: 100
-  emissionAreaSize: {x: 40, y: 0, z: 40}
-  offsetFromPlayer: {x: 0, y: 10, z: 0}
-  particleFallSpeed: 12
-  particleLifetime: 1.5
-  groundConsiderationOffset: 1
-  minScaleMultiplier: 0.7
-  maxScaleMultiplier: 1.3
-  minSpeedMultiplier: 0.9
-  maxSpeedMultiplier: 1.1
-  windInfluence: {x: 1, y: 0}
 --- !u!4 &995856464
 Transform:
   m_ObjectHideFlags: 0
@@ -2005,6 +1980,31 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &995856465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 995856462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae67aa16391af5447b845fd515ab3efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  particlePrefab: {fileID: 1135073677811616632, guid: d3545539caa12024bb70531771dbbf89, type: 3}
+  targetTransform: {fileID: 211476397}
+  emissionRate: 1000
+  offsetFromTarget: {x: 0, y: 10, z: 0}
+  emissionAreaSize: {x: 20, y: 0, z: 20}
+  particleFallSpeed: 12
+  particleLifetime: 1.5
+  groundConsiderationOffset: 1
+  minScaleMultiplier: 0.7
+  maxScaleMultiplier: 1.3
+  minSpeedMultiplier: 0.9
+  maxSpeedMultiplier: 1.1
+  windInfluence: {x: 1, y: 0}
 --- !u!1 &996733182
 GameObject:
   m_ObjectHideFlags: 0
