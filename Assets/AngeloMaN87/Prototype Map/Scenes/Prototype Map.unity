@@ -1330,6 +1330,63 @@ Material:
     m_Colors: []
   m_BuildTextureStacks: []
   m_AllowLocking: 1
+--- !u!1 &608386409
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 608386411}
+  - component: {fileID: 608386410}
+  m_Layer: 0
+  m_Name: EmissorChuvaFundo
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &608386410
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 608386409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae67aa16391af5447b845fd515ab3efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  particlePrefab: {fileID: 1135073677811616632, guid: 0000979f6613a1646b5641e19ffcd281, type: 3}
+  targetTransform: {fileID: 211476397}
+  emissionRate: 10
+  offsetFromTarget: {x: 0, y: 10, z: 1.5}
+  emissionAreaSize: {x: 20, y: 0, z: 20}
+  particleFallSpeed: 12
+  particleLifetime: 1.5
+  groundConsiderationOffset: 1
+  minScaleMultiplier: 0.7
+  maxScaleMultiplier: 1.3
+  minSpeedMultiplier: 0.9
+  maxSpeedMultiplier: 1.1
+  windInfluence: {x: 1, y: 0}
+--- !u!4 &608386411
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 608386409}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -6.05265, y: 0.51316, z: -6.05266}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &622170286
 GameObject:
   m_ObjectHideFlags: 0
@@ -4753,3 +4810,4 @@ SceneRoots:
   - {fileID: 1159333149}
   - {fileID: 622170293}
   - {fileID: 698575375}
+  - {fileID: 608386411}
