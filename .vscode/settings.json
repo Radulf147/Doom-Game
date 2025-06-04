@@ -66,5 +66,5 @@
     "explorer.fileNesting.patterns": {
         "*.sln": "*.csproj"
     },
-    "dotnet.defaultSolution": "Doom-Game.sln"
+    "dotnet.defaultSolution": "Doom Game - Computa grafica 1.sln"
 }
