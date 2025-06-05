@@ -3,23 +3,25 @@ using System.Collections; // Necessário para usar Coroutines
 
 public class GunScript : MonoBehaviour
 {
-    [Header("Referências da Arma")]
-    public GameObject projectilePrefab; // Seu prefab de projétil (se estiver usando um)
-    public Transform projectileSpawnPoint; // Ponto de onde o projétil sai (opcional)
-    // Adicione aqui outras variáveis da sua arma, como dano, cadência de tiro, etc.
+    [Header("Gun Settings")]
+    [SerializeField] private float fireRate = 0.5f; // Seu controle de cadência
+    [SerializeField] private float projectileSpeed = 30f; // Sua velocidade de projétil
+
+    [Header("Projectile Settings")]
+    [SerializeField] private GameObject projectilePrefab;
+    [SerializeField] private Transform muzzlePoint;
 
     [Header("Animação do Sprite da Arma")]
-    public SpriteRenderer weaponSpriteRenderer; // Arraste o GameObject "SpriteArmaFP" aqui
-    public Sprite idleSprite;                 // Arraste o sprite da arma parada (último frame do GIF)
-    public Sprite[] shootAnimationFrames;     // Arraste os frames da animação de tiro (em ordem)
-    public float animationFrameRate = 15f;    // Frames por segundo da animação (ex: 10, 15, 20)
+    public SpriteRenderer weaponSpriteRenderer;
+    public Sprite idleSprite;
+    public Sprite[] shootAnimationFrames;
+    public float animationFrameRate = 15f;
     
     private bool isShootingAnimationPlaying = false;
-    // private float nextFireTime = 0f; // Para controlar a cadência de tiro, se necessário
+    private float nextFireTime; // Seu controle de cadência
 
     void Start()
     {
-        // Garante que a arma começa com o sprite "idle" (parado)
         if (weaponSpriteRenderer != null && idleSprite != null)
         {
             weaponSpriteRenderer.sprite = idleSprite;
@@ -30,25 +32,18 @@ public class GunScript : MonoBehaviour
         }
         else if (idleSprite == null)
         {
-            Debug.LogWarning("GunScript: 'Idle Sprite' não foi atribuído. A arma pode não resetar para o visual correto após a animação.");
+            Debug.LogWarning("GunScript: 'Idle Sprite' não foi atribuído.");
         }
     }
 
     void Update()
     {
-        // Verifica o input para atirar (botão esquerdo do mouse)
-        // Adicione aqui sua lógica de cadência de tiro (if Time.time > nextFireTime) se necessário
-        if (Input.GetMouseButtonDown(0)) // GetMouseButtonDown para tiro único por clique
-        // Se for arma automática, use GetMouseButton(0) e controle a cadência com nextFireTime
+        // Verifica o input e a cadência de tiro
+        if (Input.GetButtonDown("Fire1") && Time.time >= nextFireTime)
         {
-            // --- SUA LÓGICA DE TIRO PRINCIPAL VAI AQUI ---
-            // Exemplo:
-            // if (projectilePrefab != null && projectileSpawnPoint != null)
-            // {
-            //     Instantiate(projectilePrefab, projectileSpawnPoint.position, projectileSpawnPoint.rotation);
-            // }
-            // Debug.Log("Tiro disparado!"); // Placeholder
-            // --------------------------------------------
+            // Lógica de Disparo (baseada no seu código antigo)
+            ShootProjectile(); 
+            nextFireTime = Time.time + fireRate; // Define o tempo para o próximo tiro
 
             // Inicia a animação do sprite da arma, se não estiver tocando
             if (weaponSpriteRenderer != null && shootAnimationFrames != null && shootAnimationFrames.Length > 0 && !isShootingAnimationPlaying)
@@ -58,14 +53,40 @@ public class GunScript : MonoBehaviour
         }
     }
 
+    void ShootProjectile()
+    {
+        Debug.Log("DEBUG: Função ShootProjectile Iniciada.");
+        if (projectilePrefab == null)
+        {
+            Debug.LogError("ERRO DEBUG: Projectile Prefab não atribuído no GunScript!", this);
+            return;
+        }
+        if (muzzlePoint == null)
+        {
+            Debug.LogError("ERRO DEBUG: Muzzle Point não atribuído no GunScript!", this);
+            return;
+        }
+
+        GameObject newProjectile = Instantiate(projectilePrefab, muzzlePoint.position, muzzlePoint.rotation);
+        Debug.Log("DEBUG: Projétil instanciado com sucesso: " + newProjectile.name);
+
+        Rigidbody rb = newProjectile.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.AddForce(muzzlePoint.forward * projectileSpeed, ForceMode.VelocityChange);
+            Debug.Log($"DEBUG: Força de {projectileSpeed} aplicada ao projétil. Direção: {muzzlePoint.forward}");
+        }
+        else
+        {
+            Debug.LogError("ERRO DEBUG: O Prefab do Projétil não tem um componente Rigidbody!", newProjectile);
+        }
+    }
+
     IEnumerator PlayShootAnimation()
     {
         isShootingAnimationPlaying = true;
-        
-        // Calcula o tempo de espera entre cada frame da animação
         float delayBetweenFrames = 1.0f / animationFrameRate;
 
-        // Percorre todos os frames da animação de tiro
         for (int i = 0; i < shootAnimationFrames.Length; i++)
         {
             if (weaponSpriteRenderer != null && shootAnimationFrames[i] != null)
@@ -75,19 +96,10 @@ public class GunScript : MonoBehaviour
             yield return new WaitForSeconds(delayBetweenFrames);
         }
 
-        // Após a animação, volta para o sprite "idle"
-        // (que você disse ser o último frame do GIF, então pode ser o último da animação
-        // ou um sprite específico que você arrastou para idleSprite)
         if (weaponSpriteRenderer != null && idleSprite != null)
         {
             weaponSpriteRenderer.sprite = idleSprite;
         }
-        // Alternativamente, se o idle é SEMPRE o último frame da animação:
-        // else if (weaponSpriteRenderer != null && shootAnimationFrames.Length > 0)
-        // {
-        //     weaponSpriteRenderer.sprite = shootAnimationFrames[shootAnimationFrames.Length - 1];
-        // }
-
         isShootingAnimationPlaying = false;
     }
 }
