@@ -210,7 +210,7 @@ public class RangeVisualizer : MonoBehaviour
             detectionRangeLineRenderer.gameObject.SetActive(shouldBeActive); // Ativa/desativa o GameObject filho
             if (shouldBeActive)
             {
-                UpdateLineRendererCircle(detectionRangeLineRenderer, enemyNavigation.DetectionRadius, GetCurrentDetectionColor());
+                UpdateLineRendererCircle(detectionRangeLineRenderer, enemyNavigation.DetectionRadius, Color.blue);
             }
         }
 
