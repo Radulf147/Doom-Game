@@ -23,8 +23,8 @@ public class EnemyNavigation : MonoBehaviour
 
     [Header("Configurações de Ataque")]
     public float attackDamage = 15f;
-    public float attackRange = 2.5f;    // Raio do semicírculo de ataque
-    public float attackAngle = 90f;     // Ângulo total do semicírculo (ex: 90 graus para frente)
+    public float attackRange = 2.5f;    
+    public float attackAngle = 90f;     
     public float attackCooldown = 2f;   // Tempo em segundos entre ataques
     private float lastAttackTime;       // Para controlar o cooldown
 
@@ -93,6 +93,56 @@ public class EnemyNavigation : MonoBehaviour
         HandleAttacking();
     }
 
+    void HandleDetectionAndChase()
+    {
+        float distanceToPlayerRoot = Vector3.Distance(transform.position, player.position);
+
+        if (currentState != DetectionState.Detected)
+        {
+            if (distanceToPlayerRoot <= detectionRange)
+            {
+                if (HasLineOfSightToPlayer())
+                {
+                    currentState = DetectionState.Detected;
+                    if (agent.isOnNavMesh) agent.isStopped = false; // Só define destino se estiver na NavMesh
+                    if (agent.isOnNavMesh) agent.SetDestination(player.position);
+                }
+                else
+                {
+                    currentState = DetectionState.Idle;
+                    if (agent.isOnNavMesh && agent.isActiveAndEnabled && !agent.isStopped) agent.isStopped = true;
+                }
+            }
+        }
+        else // currentState == DetectionState.Detected
+        {
+            if (distanceToPlayerRoot > loseChaseRange)
+            {
+                currentState = DetectionState.Idle;
+                if (agent.isOnNavMesh) agent.isStopped = true;
+            }
+            else
+            {
+                if (agent.isOnNavMesh) agent.SetDestination(player.position);
+                if (agent.isOnNavMesh && agent.isStopped) agent.isStopped = false;
+            }
+        }
+    }
+
+    bool HasLineOfSightToPlayer()
+    {
+        Vector3 aiEyePosition = transform.position + (Vector3.up * aiEyeHeight);
+        Vector3 playerTargetPosition = player.position + (Vector3.up * playerTargetHeight);
+        Vector3 directionToPlayer = (playerTargetPosition - aiEyePosition).normalized;
+        float distanceToPlayerTarget = Vector3.Distance(aiEyePosition, playerTargetPosition);
+
+        RaycastHit hitInfo;
+        if (Physics.Raycast(aiEyePosition, directionToPlayer, out hitInfo, distanceToPlayerTarget, collidableLayers))
+        {
+            return (hitInfo.transform == player || hitInfo.transform.IsChildOf(player.transform));
+        }
+        return true;
+    }
     public void TakeDamage(float amount)
     {
         if (isDead) return; // Já está morto, não pode tomar mais dano
@@ -126,9 +176,6 @@ public class EnemyNavigation : MonoBehaviour
             col.enabled = false;
         }
 
-        // Adicione aqui: animação de morte, efeitos sonoros, partículas, etc.
-        // Exemplo: GetComponent<Animator>()?.SetTrigger("Die");
-
         // Para o script de visualização parar de tentar acessar
         var visualizer = GetComponent<RangeVisualizer>();
         if (visualizer != null)
@@ -136,63 +183,7 @@ public class EnemyNavigation : MonoBehaviour
             visualizer.displayVisualizers = false; // Esconde os círculos
         }
         
-        // Desabilita este script para parar a lógica de Update
-        // this.enabled = false; 
-        // Ou, para destruir o objeto após um tempo:
         Destroy(gameObject, 5f); // Destroi o GameObject após 5 segundos
-    }
-
-    void HandleDetectionAndChase()
-    {
-        // A lógica original de detecção e perseguição permanece a mesma,
-        // mas agora ela não será executada se isDead = true (devido à checagem no Update).
-        float distanceToPlayerRoot = Vector3.Distance(transform.position, player.position);
-
-        if (currentState != DetectionState.Detected)
-        {
-            if (distanceToPlayerRoot <= detectionRange)
-            {
-                if (HasLineOfSightToPlayer())
-                {
-                    currentState = DetectionState.Detected;
-                    if(agent.isOnNavMesh) agent.isStopped = false; // Só define destino se estiver na NavMesh
-                    if(agent.isOnNavMesh) agent.SetDestination(player.position);
-                }
-                else
-                {
-                    currentState = DetectionState.Idle;
-                    if (agent.isOnNavMesh && agent.isActiveAndEnabled && !agent.isStopped) agent.isStopped = true;
-                }
-            }
-        }
-        else // currentState == DetectionState.Detected
-        {
-            if (distanceToPlayerRoot > loseChaseRange)
-            {
-                currentState = DetectionState.Idle;
-                if(agent.isOnNavMesh) agent.isStopped = true;
-            }
-            else
-            {
-                if(agent.isOnNavMesh) agent.SetDestination(player.position);
-                if (agent.isOnNavMesh && agent.isStopped) agent.isStopped = false;
-            }
-        }
-    }
-
-    bool HasLineOfSightToPlayer()
-    {
-        Vector3 aiEyePosition = transform.position + (Vector3.up * aiEyeHeight);
-        Vector3 playerTargetPosition = player.position + (Vector3.up * playerTargetHeight);
-        Vector3 directionToPlayer = (playerTargetPosition - aiEyePosition).normalized;
-        float distanceToPlayerTarget = Vector3.Distance(aiEyePosition, playerTargetPosition);
-
-        RaycastHit hitInfo;
-        if (Physics.Raycast(aiEyePosition, directionToPlayer, out hitInfo, distanceToPlayerTarget, collidableLayers))
-        {
-            return (hitInfo.transform == player || hitInfo.transform.IsChildOf(player.transform));
-        }
-        return true;
     }
 
     void HandleAttacking()

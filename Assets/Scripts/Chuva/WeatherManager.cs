@@ -1,5 +1,5 @@
 using UnityEngine;
-using System.Collections; // Necessário para Coroutines
+using System.Collections; 
 
 public class WeatherManager : MonoBehaviour
 {
@@ -7,8 +7,8 @@ public class WeatherManager : MonoBehaviour
     private RainIntensityState currentState;
 
     [Header("Referências")]
-    public EmissorChuva emissorChuvaPrincipal; // Seu emissor de chuva principal
-    public EmissorChuva emissorChuvaFundo;   // Seu emissor de chuva de fundo (opcional)
+    public EmissorChuva emissorChuvaPrincipal;
+    public EmissorChuva emissorChuvaFundo; 
     public AudioSource audioChuvaFraca;
     public AudioSource audioChuvaForte;
     public AudioSource audioVentoForte;
@@ -18,7 +18,7 @@ public class WeatherManager : MonoBehaviour
     public float duracaoMaxChuvaFraca = 60f;
     public float duracaoMinChuvaForte = 20f;
     public float duracaoMaxChuvaForte = 40f;
-    public float tempoDeTransicao = 5f; // Tempo para transição suave entre estados
+    public float tempoDeTransicao = 5f; 
 
     [Header("Chuva Fraca")]
     public float emissaoChuvaFraca = 50f;
@@ -27,7 +27,7 @@ public class WeatherManager : MonoBehaviour
 
     [Header("Chuva Forte")]
     public float emissaoChuvaForte = 200f;
-    public Vector2 ventoChuvaForte = new Vector2(5f, 1f); // Vento mais forte e talvez em outra direção
+    public Vector2 ventoChuvaForte = new Vector2(5f, 1f);
     public float volumeChuvaForte = 1f;
     public float volumeVentoForte = 0.8f;
 
@@ -36,18 +36,16 @@ public class WeatherManager : MonoBehaviour
 
     void Start()
     {
-        // Garante que os AudioSources estão configurados para loop
+   
         if (audioChuvaFraca) audioChuvaFraca.loop = true;
         if (audioChuvaForte) audioChuvaForte.loop = true;
         if (audioVentoForte) audioVentoForte.loop = true;
 
-        // Começa com chuva fraca (ou outro estado inicial desejado)
-        // Define volumes iniciais para não começar tocando tudo
         if (audioChuvaFraca) audioChuvaFraca.volume = 0;
         if (audioChuvaForte) audioChuvaForte.volume = 0;
         if (audioVentoForte) audioVentoForte.volume = 0;
 
-        DefinirEstado(RainIntensityState.Fraca, true); // true para configuração inicial instantânea
+        DefinirEstado(RainIntensityState.Fraca, true);
     }
 
     void Update()
@@ -76,35 +74,31 @@ public class WeatherManager : MonoBehaviour
         currentState = novoEstado;
         tempoNoEstadoAtual = 0f;
 
-        StopAllCoroutines(); // Para quaisquer transições anteriores
+        StopAllCoroutines();
 
         if (novoEstado == RainIntensityState.Fraca)
         {
             duracaoFaseAtual = Random.Range(duracaoMinChuvaFraca, duracaoMaxChuvaFraca);
 
-            // Efeitos Visuais
             if (emissorChuvaPrincipal != null)
             {
                 StartCoroutine(TransicionarFloat(val => emissorChuvaPrincipal.emissionRate = val, emissorChuvaPrincipal.emissionRate, emissaoChuvaFraca, instantaneo ? 0f : tempoDeTransicao));
                 StartCoroutine(TransicionarVector2(val => emissorChuvaPrincipal.windInfluence = val, emissorChuvaPrincipal.windInfluence, ventoChuvaFraca, instantaneo ? 0f : tempoDeTransicao));
             }
-            if (emissorChuvaFundo != null) // Se tiver emissor de fundo
+            if (emissorChuvaFundo != null)
             {
-                // Ajuste proporcional ou valores específicos para o fundo
                 StartCoroutine(TransicionarFloat(val => emissorChuvaFundo.emissionRate = val, emissorChuvaFundo.emissionRate, emissaoChuvaFraca * 0.75f, instantaneo ? 0f : tempoDeTransicao)); // Ex: 75% da principal
                 StartCoroutine(TransicionarVector2(val => emissorChuvaFundo.windInfluence = val, emissorChuvaFundo.windInfluence, ventoChuvaFraca * 0.5f, instantaneo ? 0f : tempoDeTransicao)); // Ex: 50% do vento
             }
 
-            // Efeitos Sonoros
             if (audioChuvaFraca) StartCoroutine(FadeAudio(audioChuvaFraca, volumeChuvaFraca, instantaneo ? 0f : tempoDeTransicao));
             if (audioChuvaForte) StartCoroutine(FadeAudio(audioChuvaForte, 0f, instantaneo ? 0f : tempoDeTransicao));
             if (audioVentoForte) StartCoroutine(FadeAudio(audioVentoForte, 0f, instantaneo ? 0f : tempoDeTransicao));
         }
-        else // Chuva Forte
+        else
         {
             duracaoFaseAtual = Random.Range(duracaoMinChuvaForte, duracaoMaxChuvaForte);
 
-            // Efeitos Visuais
             if (emissorChuvaPrincipal != null)
             {
                 StartCoroutine(TransicionarFloat(val => emissorChuvaPrincipal.emissionRate = val, emissorChuvaPrincipal.emissionRate, emissaoChuvaForte, instantaneo ? 0f : tempoDeTransicao));
@@ -116,7 +110,6 @@ public class WeatherManager : MonoBehaviour
                 StartCoroutine(TransicionarVector2(val => emissorChuvaFundo.windInfluence = val, emissorChuvaFundo.windInfluence, ventoChuvaForte * 0.5f, instantaneo ? 0f : tempoDeTransicao));
             }
 
-            // Efeitos Sonoros
             if (audioChuvaFraca) StartCoroutine(FadeAudio(audioChuvaFraca, 0f, instantaneo ? 0f : tempoDeTransicao));
             if (audioChuvaForte) StartCoroutine(FadeAudio(audioChuvaForte, volumeChuvaForte, instantaneo ? 0f : tempoDeTransicao));
             if (audioVentoForte) StartCoroutine(FadeAudio(audioVentoForte, volumeVentoForte, instantaneo ? 0f : tempoDeTransicao));
@@ -156,7 +149,6 @@ public class WeatherManager : MonoBehaviour
         }
     }
 
-    // Coroutine genérica para transicionar um valor float
     IEnumerator TransicionarFloat(System.Action<float> setter, float valorInicial, float valorFinal, float duracao)
     {
         if (duracao <= 0)
@@ -174,7 +166,6 @@ public class WeatherManager : MonoBehaviour
         setter(valorFinal);
     }
 
-    // Coroutine genérica para transicionar um Vector2
     IEnumerator TransicionarVector2(System.Action<Vector2> setter, Vector2 valorInicial, Vector2 valorFinal, float duracao)
     {
         if (duracao <= 0)

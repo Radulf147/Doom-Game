@@ -10,16 +10,14 @@ public class RangeVisualizer : MonoBehaviour
     [Tooltip("Número de segmentos para um círculo completo de 360 graus.")]
     public int segmentsForFullCircle = 36;
     public float circleLineWidth = 0.1f;
-    public Material lineMaterial; // Material para todos os LineRenderers
+    public Material lineMaterial;
 
     [Header("Visualização dos Ranges de Detecção")]
     [Tooltip("Marque para exibir os círculos de visualização no editor e no jogo.")]
     public bool displayVisualizers = true;
-    // As cores são definidas em GetCurrentDetectionColor e para o loseChaseRange diretamente
 
     [Header("Visualização do Range de Ataque")]
-    public Color attackRangeColor = Color.yellow;
-    // O número de segmentos para o arco de ataque será proporcional a segmentsForFullCircle
+    private Color attackRangeColor = Color.yellow;
 
     private LineRenderer detectionRangeLineRenderer;
     private LineRenderer loseChaseRangeLineRenderer;
@@ -28,7 +26,7 @@ public class RangeVisualizer : MonoBehaviour
     // Nomes dos GameObjects filhos para os visualizadores
     private const string DetectionCircleGOName = "DetectionRange_Visualizer_Child";
     private const string LoseChaseCircleGOName = "LoseChaseRange_Visualizer_Child";
-    private const string AttackArcGOName = "AttackArc_Visualizer_Child"; // Novo nome
+    private const string AttackArcGOName = "AttackArc_Visualizer_Child";
 
     void OnEnable()
     {
@@ -51,12 +49,9 @@ public class RangeVisualizer : MonoBehaviour
 
     void SetupVisualizers()
     {
-        // Os parâmetros de cor e raio são definidos em UpdateVisuals
-        detectionRangeLineRenderer = FindOrCreateLineRenderer(DetectionCircleGOName, true); // true para loop (círculo)
-        loseChaseRangeLineRenderer = FindOrCreateLineRenderer(LoseChaseCircleGOName, true); // true para loop (círculo)
-        attackArcLineRenderer = FindOrCreateLineRenderer(AttackArcGOName, true); // true para loop (semicírculo fechado)
-                                                                                 // ou false se for desenhar as linhas radiais manualmente sem loop.
-                                                                                 // Com loop=true, o primeiro e último ponto (o centro) se conectam às pontas do arco.
+        detectionRangeLineRenderer = FindOrCreateLineRenderer(DetectionCircleGOName, true); 
+        loseChaseRangeLineRenderer = FindOrCreateLineRenderer(LoseChaseCircleGOName, true); 
+        attackArcLineRenderer = FindOrCreateLineRenderer(AttackArcGOName, true); 
     }
 
     LineRenderer FindOrCreateLineRenderer(string childName, bool loop)
@@ -78,7 +73,6 @@ public class RangeVisualizer : MonoBehaviour
             
             lr.startWidth = circleLineWidth;
             lr.endWidth = circleLineWidth;
-            // lr.positionCount será definido ao atualizar
             lr.useWorldSpace = false; // Pontos são locais ao transform do LineRenderer
             lr.loop = loop; // Importante para fechar círculos ou arcos
             lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -90,7 +84,7 @@ public class RangeVisualizer : MonoBehaviour
             if (lr == null)
             {
                 DestroyImmediate(childTransform.gameObject);
-                return FindOrCreateLineRenderer(childName, loop); // Tenta recriar
+                return FindOrCreateLineRenderer(childName, loop);
             }
             // Garante que a configuração de loop seja aplicada se o objeto já existir
             lr.loop = loop;
@@ -102,7 +96,6 @@ public class RangeVisualizer : MonoBehaviour
 
     void CleanupVisualizer(ref LineRenderer rendererInstance, string childName)
     {
-        // Lógica de limpeza permanece a mesma
         if (rendererInstance != null && rendererInstance.gameObject.name == childName)
         {
             if (Application.isEditor && !Application.isPlaying) DestroyImmediate(rendererInstance.gameObject);
@@ -122,11 +115,10 @@ public class RangeVisualizer : MonoBehaviour
 
     void UpdateLineRendererCircle(LineRenderer lr, float radius, Color color)
     {
-        if (lr == null || !lr.gameObject.activeSelf) return; // Verifica se o GO está ativo
+        if (lr == null || !lr.gameObject.activeSelf) return;
 
         lr.startColor = color;
         lr.endColor = color;
-        // A largura já é definida em FindOrCreateLineRenderer e pode ser atualizada lá se necessário
         
         if (lr.positionCount != segmentsForFullCircle) lr.positionCount = segmentsForFullCircle;
 
@@ -135,7 +127,7 @@ public class RangeVisualizer : MonoBehaviour
             float angle = i * (360f / segmentsForFullCircle) * Mathf.Deg2Rad;
             float x = Mathf.Cos(angle) * radius;
             float z = Mathf.Sin(angle) * radius;
-            lr.SetPosition(i, new Vector3(x, 0.01f, z)); // Pequeno offset Y
+            lr.SetPosition(i, new Vector3(x, 0.01f, z));
         }
     }
 
@@ -147,15 +139,12 @@ public class RangeVisualizer : MonoBehaviour
         lr.endColor = color;
 
         // Calcula quantos segmentos são necessários para este arco, proporcionalmente
-        // Garante pelo menos 2 segmentos para formar um arco visível.
         int arcSegments = Mathf.Max(2, Mathf.CeilToInt(segmentsForFullCircle * (attackAngleDegrees / 360f)));
         
         // Pontos: 1 para o centro + (arcSegments + 1) para os pontos do arco.
-        // O LineRenderer com loop=true conectará o último ponto do arco ao centro (ponto 0).
-        lr.positionCount = arcSegments + 2; // Ponto central (0) + pontos do arco (1 a arcSegments+1)
+        lr.positionCount = arcSegments + 2;
 
-        // Posição 0 é o centro do arco (origem da IA)
-        lr.SetPosition(0, Vector3.zero + Vector3.up * 0.01f); // Ponto central, com pequeno offset Y
+        lr.SetPosition(0, Vector3.zero + Vector3.up * 0.01f);
 
         float halfAngleRad = (attackAngleDegrees / 2f) * Mathf.Deg2Rad;
         float angleIncrementRad = (attackAngleDegrees * Mathf.Deg2Rad) / arcSegments;
@@ -164,20 +153,16 @@ public class RangeVisualizer : MonoBehaviour
         {
             float currentAngleRad = -halfAngleRad + (i * angleIncrementRad);
             
-            // Os pontos do arco são calculados em relação ao forward do LineRenderer (que é o forward da IA)
             float x = Mathf.Sin(currentAngleRad) * radius; // Sin para x por causa da rotação
             float z = Mathf.Cos(currentAngleRad) * radius; // Cos para z (profundidade/forward)
             
             lr.SetPosition(i + 1, new Vector3(x, 0.01f, z));
         }
-        // Com lr.loop = true, o LineRenderer conectará o último ponto (lr.GetPosition(arcSegments+1))
-        // de volta ao primeiro ponto (lr.GetPosition(0)), formando a "fatia de pizza".
     }
 
 
     Color GetCurrentDetectionColor()
     {
-        // Lógica permanece a mesma
         if (enemyNavigation == null) return Color.magenta;
         if (!Application.isPlaying && enemyNavigation.CurrentState == EnemyNavigation.DetectionState.Idle) return Color.gray;
         switch (enemyNavigation.CurrentState)
@@ -204,7 +189,6 @@ public class RangeVisualizer : MonoBehaviour
         // Controla a visibilidade geral baseado em displayVisualizers e se a IA está morta
         bool shouldBeActive = displayVisualizers && !enemyNavigation.IsDead;
 
-        // Atualiza visualizador de alcance de detecção
         if (detectionRangeLineRenderer != null)
         {
             detectionRangeLineRenderer.gameObject.SetActive(shouldBeActive); // Ativa/desativa o GameObject filho
@@ -214,7 +198,6 @@ public class RangeVisualizer : MonoBehaviour
             }
         }
 
-        // Atualiza visualizador de alcance de perda de perseguição
         if (loseChaseRangeLineRenderer != null)
         {
             loseChaseRangeLineRenderer.gameObject.SetActive(shouldBeActive);
@@ -224,11 +207,10 @@ public class RangeVisualizer : MonoBehaviour
             }
         }
 
-        // Atualiza visualizador do arco de ataque
         if (attackArcLineRenderer != null)
         {
             attackArcLineRenderer.gameObject.SetActive(shouldBeActive && enemyNavigation.AttackAngle > 0 && enemyNavigation.AttackRadius > 0); // Só ativa se tiver ângulo e raio
-            if (attackArcLineRenderer.gameObject.activeSelf) // Verifica se está realmente ativo para desenhar
+            if (attackArcLineRenderer.gameObject.activeSelf)
             {
                 UpdateLineRendererAttackArc(attackArcLineRenderer, enemyNavigation.AttackRadius, enemyNavigation.AttackAngle, attackRangeColor);
             }
