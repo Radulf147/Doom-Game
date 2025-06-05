@@ -5,38 +5,38 @@ public class PlayerFPController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float moveSpeed = 7.5f;
-    public float sprintSpeed = 12.0f; // Velocidade ao correr
+    public float sprintSpeed = 12.0f;
     public float jumpSpeed = 8.0f;
 
     [Header("Jump and Gravity Settings")]
-    public float upwardGravity = 25.0f;      // Gravidade aplicada enquanto o jogador está subindo no pulo.
-    public float downwardGravity = 40.0f;    // Gravidade mais forte aplicada quando o jogador está caindo.
-    public float earlyJumpReleaseMultiplier = 1.5f; // Multiplicador para cair mais rápido se soltar o pulo cedo.
-    public float groundedGravity = 10.0f;     // Pequena força para baixo para manter o jogador "colado" ao chão.
+    public float upwardGravity = 25.0f;
+    public float downwardGravity = 40.0f;
+    public float earlyJumpReleaseMultiplier = 1.5f;
+    public float groundedGravity = 2.0f; // Valor ajustado para "grudar" melhor no chão
 
-    private float _verticalVelocity = 0f;     // Variável interna para armazenar a velocidade vertical atual
+    private float _verticalVelocity = 0f;
 
     [Header("Mouse Look Settings")]
     public Transform playerCameraTransform;
     public float lookSpeed = 2.0f;
-    public float lookXLimit = 60.0f; // Limite de rotação vertical (para não dar loop)
+    public float lookXLimit = 60.0f;
 
     [Header("Footstep Sound Settings")]
-    public AudioClip footstepSound; // Arraste seu arquivo "Andar_na_terra" aqui
-    public float walkStepInterval = 0.6f;  // Tempo entre os passos ao andar
-    public float sprintStepInterval = 0.35f; // Tempo entre os passos ao correr
-    public float walkPitch = 1.0f;         // Tom do som ao andar
-    public float sprintPitch = 1.3f;       // Tom do som ao correr (um pouco mais agudo/rápido)
+    public AudioClip footstepSound;
+    public float walkStepInterval = 0.6f;
+    public float sprintStepInterval = 0.35f;
+    public float walkPitch = 1.0f;
+    public float sprintPitch = 1.3f;
     
     private AudioSource footstepAudioSource;
     private float stepTimer = 0f;
-    private float _currentAppliedSpeed = 0f; // Para sabermos a velocidade atual e decidir o som do passo
+    private float _currentAppliedSpeed = 0f;
 
     CharacterController characterController;
-    float rotationX = 0; // Variável para acumular a rotação vertical da câmera
+    float rotationX = 0;
 
     [HideInInspector]
-    public bool canMove = true; // Para travar o movimento se necessário (ex: menu)
+    public bool canMove = true;
 
     void Start()
     {
@@ -65,7 +65,7 @@ public class PlayerFPController : MonoBehaviour
             }
             else
             {
-                Debug.LogError("PlayerFPController: 'playerCameraTransform' não foi atribuído no Inspector e nenhuma c�mera filha foi encontrada! A rotação vertical do mouse não funcionar� corretamente. Por favor, atribua a c�mera filha.");
+                Debug.LogError("PlayerFPController: 'playerCameraTransform' não foi atribuído no Inspector e nenhuma câmera filha foi encontrada! A rotação vertical do mouse não funcionará corretamente. Por favor, atribua a câmera filha.");
             }
         }
     }
@@ -99,15 +99,18 @@ public class PlayerFPController : MonoBehaviour
             }
         }
 
+        // --- Lógica Vertical (Pulo e Gravidade) --- MODIFICADA AQUI ---
         if (characterController.isGrounded)
         {
-            _verticalVelocity = -groundedGravity * Time.deltaTime; 
+            // Aplica uma velocidade vertical negativa constante para manter "colado" ao chão/rampas
+            _verticalVelocity = -Mathf.Abs(groundedGravity); 
+
             if (Input.GetButtonDown("Jump") && canMove)
             {
                 _verticalVelocity = jumpSpeed; 
             }
         }
-        else 
+        else // No ar
         {
             if (_verticalVelocity > 0 && !Input.GetButton("Jump") && canMove) 
             {
@@ -123,7 +126,7 @@ public class PlayerFPController : MonoBehaviour
             }
         }
 
-        // --- Lógica dos Sons de Passos --- MODIFICADA ABAIXO ---
+        // --- Lógica dos Sons de Passos ---
         bool isActuallyMovingOnGround = characterController.isGrounded && _currentAppliedSpeed > 0.01f && canMove;
 
         if (isActuallyMovingOnGround)
@@ -138,10 +141,7 @@ public class PlayerFPController : MonoBehaviour
         }
         else
         {
-            // Se não está se movendo (ou está no ar, ou canMove é false),
-            // resetamos o stepTimer para 0.
-            // Isso fará com que o primeiro passo seja imediato ao começar a andar de novo.
-            stepTimer = 0f; // <<< ALTERAÇÃO PARA CORRIGIR O DELAY INICIAL DO SOM
+            stepTimer = 0f; 
         }
 
         Vector3 finalMove = horizontalInputVector; 
@@ -162,11 +162,6 @@ public class PlayerFPController : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
-        // if (Input.GetMouseButtonDown(0) && Cursor.lockState == CursorLockMode.None && canMove)
-        // {
-        //     Cursor.lockState = CursorLockMode.Locked;
-        //     Cursor.visible = false;
-        // }
     }
 
     void PlayFootstepSound()
