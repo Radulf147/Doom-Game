@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 3130414176901103427}
   - component: {fileID: -5370395678653908806}
   - component: {fileID: 3660216107105476903}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: "Proj\xE9til"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -153,6 +153,8 @@ MonoBehaviour:
   damage: 20
   lifetime: 5
   hitEffectPrefab: {fileID: 0}
+  bulletHoleDecalPrefab: {fileID: 0}
+  decalOffset: 0.03
 --- !u!135 &3660216107105476903
 SphereCollider:
   m_ObjectHideFlags: 0
