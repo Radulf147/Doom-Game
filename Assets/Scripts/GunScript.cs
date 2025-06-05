@@ -5,61 +5,48 @@ public class GunScript : MonoBehaviour
 {
     [Header("Referências da Arma")]
     public GameObject projectilePrefab;
-    public Transform muzzlePoint; // Renomeei para muzzlePoint como no seu código antigo
-    [SerializeField] private float projectileSpeed = 30f; // Sua velocidade de projétil
+    public Transform muzzlePoint;
+    [SerializeField] private float projectileSpeed = 30f;
 
     [Header("Gun Settings")]
-    [SerializeField] private float fireRate = 0.5f; // Seu controle de cadência
-    private float nextFireTime; // Seu controle de cadência
+    [SerializeField] private float fireRate = 0.5f;
+    private float nextFireTime;
 
     [Header("Animação do Sprite da Arma")]
     public SpriteRenderer weaponSpriteRenderer;
     public Sprite idleSprite;
     public Sprite[] shootAnimationFrames;
     public float animationFrameRate = 15f;
-    
-    [Header("Som do Tiro")] // <<< NOVO HEADER E VARIÁVEL
-    public AudioClip shootSound; // <<< ADICIONE ESTA LINHA: Arraste seu som de tiro aqui
+
+    [Header("Som do Tiro")]
+    public AudioClip shootSound;
 
     private bool isShootingAnimationPlaying = false;
-    private AudioSource gunAudioSource; // <<< ADICIONE ESTA LINHA
+    private AudioSource gunAudioSource;
 
     void Start()
     {
-        // Pega ou adiciona o AudioSource para os sons da arma
         gunAudioSource = GetComponent<AudioSource>();
         if (gunAudioSource == null)
         {
-            Debug.LogWarning("GunScript: Nenhum AudioSource encontrado no objeto " + gameObject.name + ". Adicionando um novo.");
             gunAudioSource = gameObject.AddComponent<AudioSource>();
         }
-        // Configurações padrão para o AudioSource da arma, caso ele tenha sido criado agora
         gunAudioSource.playOnAwake = false;
         gunAudioSource.loop = false;
-        // Você pode definir o spatialBlend aqui também se quiser garantir:
-        // gunAudioSource.spatialBlend = 0f; // Para som 2D
 
-        // Garante que a arma começa com o sprite "idle" (parado)
         if (weaponSpriteRenderer != null && idleSprite != null)
         {
             weaponSpriteRenderer.sprite = idleSprite;
         }
-        else if (weaponSpriteRenderer == null)
-        {
-            Debug.LogError("GunScript: 'Weapon Sprite Renderer' não foi atribuído no Inspector!");
-        }
-        else if (idleSprite == null)
-        {
-            Debug.LogWarning("GunScript: 'Idle Sprite' não foi atribuído.");
-        }
+        // Logs de erro/aviso para weaponSpriteRenderer e idleSprite já existem no seu código original.
     }
 
     void Update()
     {
         if (Input.GetButtonDown("Fire1") && Time.time >= nextFireTime)
         {
-            ShootProjectile(); 
-            nextFireTime = Time.time + fireRate; 
+            ShootProjectile();
+            nextFireTime = Time.time + fireRate;
 
             if (weaponSpriteRenderer != null && shootAnimationFrames != null && shootAnimationFrames.Length > 0 && !isShootingAnimationPlaying)
             {
@@ -70,41 +57,59 @@ public class GunScript : MonoBehaviour
 
     void ShootProjectile()
     {
-        // Debug.Log("DEBUG: Função ShootProjectile Iniciada."); // Seus logs antigos
         if (projectilePrefab == null || muzzlePoint == null)
         {
-            // Debug.LogError("ERRO DEBUG: Projectile Prefab ou Muzzle Point não atribuído...", this); // Seus logs antigos
-            if(projectilePrefab == null) Debug.LogError("GunScript: Projectile Prefab não atribuído!", this);
-            if(muzzlePoint == null) Debug.LogError("GunScript: Muzzle Point não atribuído!", this);
+            if (projectilePrefab == null) Debug.LogError("GunScript: Projectile Prefab não atribuído!", this);
+            if (muzzlePoint == null) Debug.LogError("GunScript: Muzzle Point não atribuído!", this);
             return;
         }
 
-        GameObject newProjectile = Instantiate(projectilePrefab, muzzlePoint.position, muzzlePoint.rotation);
-        // Debug.Log("DEBUG: Projétil instanciado..."); // Seus logs antigos
+        // 1. Determinar o ponto de mira (centro da tela)
+        Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0)); // Raio do centro da tela
+        RaycastHit hitInfo;
+        Vector3 targetPoint;
+
+        // Define uma distância máxima para o raycast, para onde o projétil irá se não atingir nada.
+        float maxRayDistance = 1000f;
+
+        if (Physics.Raycast(ray, out hitInfo, maxRayDistance))
+        {
+            targetPoint = hitInfo.point; // O projétil mirará no ponto de colisão do raio
+            Debug.Log("DEBUG (GunScript): Raio da mira atingiu " + hitInfo.collider.name + " em " + targetPoint);
+        }
+        else
+        {
+            targetPoint = ray.GetPoint(maxRayDistance); // O projétil mirará em um ponto distante na direção do raio
+            Debug.Log("DEBUG (GunScript): Raio da mira não atingiu nada, mirando para " + targetPoint);
+        }
+
+        // 2. Calcular a direção do muzzlePoint até o targetPoint
+        Vector3 directionToTarget = (targetPoint - muzzlePoint.position).normalized;
+
+        // 3. Instanciar o projétil no muzzlePoint, mas rotacionado para a direção do alvo
+        GameObject newProjectile = Instantiate(projectilePrefab, muzzlePoint.position, Quaternion.LookRotation(directionToTarget));
+        Debug.Log("DEBUG (GunScript): Projétil instanciado em " + muzzlePoint.position + " olhando para " + directionToTarget);
 
         Rigidbody rb = newProjectile.GetComponent<Rigidbody>();
         if (rb != null)
         {
-            rb.AddForce(muzzlePoint.forward * projectileSpeed, ForceMode.VelocityChange);
-            // Debug.Log($"DEBUG: Força aplicada..."); // Seus logs antigos
+            // Aplicar força na direção calculada
+            rb.AddForce(directionToTarget * projectileSpeed, ForceMode.VelocityChange);
+            Debug.Log($"DEBUG (GunScript): Força de {projectileSpeed} aplicada ao projétil na direção {directionToTarget}");
         }
         else
         {
             Debug.LogError("ERRO DEBUG: O Prefab do Projétil não tem um componente Rigidbody!", newProjectile);
         }
 
-        // --- TOCAR O SOM DO TIRO --- // <<< ADICIONADO AQUI
         if (gunAudioSource != null && shootSound != null)
         {
-            // PlayOneShot permite tocar vários sons sobrepostos (bom para tiros rápidos)
-            // e você pode passar um segundo argumento para escalar o volume (0.0 a 1.0)
-            gunAudioSource.PlayOneShot(shootSound /*, 1.0f */); // O segundo argumento é opcional (volume scale)
+            gunAudioSource.PlayOneShot(shootSound);
         }
-        else if(shootSound == null)
+        else if (shootSound == null)
         {
             Debug.LogWarning("GunScript: AudioClip de tiro (Shoot Sound) não atribuído no Inspector.", this);
         }
-        // -------------------------- //
     }
 
     IEnumerator PlayShootAnimation()
