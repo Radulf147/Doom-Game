@@ -1,86 +1,93 @@
-using UnityEngine; // Necessário para funcionalidades do Unity como GameObject, Transform, Input, etc.
+using UnityEngine;
+using System.Collections; // Necessário para usar Coroutines
 
-public class GunScript : MonoBehaviour // Faz deste script um componente que pode ser anexado a um GameObject
+public class GunScript : MonoBehaviour
 {
-    [Header("Gun Settings")] // Título no Inspector
-    [SerializeField] private float fireRate = 0.5f; // Tempo de espera entre os tiros (em segundos). Ajuste no Inspector.
+    [Header("Referências da Arma")]
+    public GameObject projectilePrefab; // Seu prefab de projétil (se estiver usando um)
+    public Transform projectileSpawnPoint; // Ponto de onde o projétil sai (opcional)
+    // Adicione aqui outras variáveis da sua arma, como dano, cadência de tiro, etc.
 
-    [Header("Projectile Settings")] // Título no Inspector
-    [SerializeField] private GameObject projectilePrefab; // Prefab do seu projétil (a "bala"). ARRASTE AQUI!
-    [SerializeField] private Transform muzzlePoint; // Ponto de onde o projétil vai sair. ARRASTE AQUI!
-    [SerializeField] private float projectileSpeed = 30f; // Velocidade de lançamento do projétil. Ajuste no Inspector.
+    [Header("Animação do Sprite da Arma")]
+    public SpriteRenderer weaponSpriteRenderer; // Arraste o GameObject "SpriteArmaFP" aqui
+    public Sprite idleSprite;                 // Arraste o sprite da arma parada (último frame do GIF)
+    public Sprite[] shootAnimationFrames;     // Arraste os frames da animação de tiro (em ordem)
+    public float animationFrameRate = 15f;    // Frames por segundo da animação (ex: 10, 15, 20)
+    
+    private bool isShootingAnimationPlaying = false;
+    // private float nextFireTime = 0f; // Para controlar a cadência de tiro, se necessário
 
-    private float nextFireTime; // Variável interna para controlar o tempo do próximo tiro.
-
-    // Update é chamado uma vez por frame. É onde detectamos o input do jogador.
-    void Update()
+    void Start()
     {
-        // NOVO DEBUG: Verifica se o Update está rodando em cada frame.
-        // Cuidado: Isso pode gerar muitos logs se você deixar ativo por muito tempo.
-        // Debug.Log("GunScript Update rodando.");
-
-        // NOVO DEBUG: Verifica se o botão de tiro (esquerdo do mouse) foi pressionado.
-        if (Input.GetButtonDown("Fire1"))
+        // Garante que a arma começa com o sprite "idle" (parado)
+        if (weaponSpriteRenderer != null && idleSprite != null)
         {
-            Debug.Log("DEBUG: Botão Fire1 (esquerdo do mouse) Pressionado!");
+            weaponSpriteRenderer.sprite = idleSprite;
         }
-
-        // Verifica se o botão esquerdo do mouse (Fire1) foi pressionado
-        // E se já passou o tempo mínimo para o próximo tiro (fireRate)
-        if (Input.GetButtonDown("Fire1") && Time.time >= nextFireTime)
+        else if (weaponSpriteRenderer == null)
         {
-            // NOVO DEBUG: Confirma que a condição para atirar foi atendida.
-            Debug.Log("DEBUG: Condição de Disparo Atendida! Chamando ShootProjectile.");
-            ShootProjectile(); // Chama a função para lançar o projétil
-            nextFireTime = Time.time + fireRate; // Define o tempo para o próximo tiro
+            Debug.LogError("GunScript: 'Weapon Sprite Renderer' não foi atribuído no Inspector!");
+        }
+        else if (idleSprite == null)
+        {
+            Debug.LogWarning("GunScript: 'Idle Sprite' não foi atribuído. A arma pode não resetar para o visual correto após a animação.");
         }
     }
 
-    /// <summary>
-    /// Lança um projétil físico na cena.
-    /// </summary>
-    void ShootProjectile()
+    void Update()
     {
-        // NOVO DEBUG: Marca o início da função de disparo.
-        Debug.Log("DEBUG: Função ShootProjectile Iniciada.");
-
-        // Verificações de segurança para garantir que os Prefabs e o ponto de saída estão configurados.
-        if (projectilePrefab == null)
+        // Verifica o input para atirar (botão esquerdo do mouse)
+        // Adicione aqui sua lógica de cadência de tiro (if Time.time > nextFireTime) se necessário
+        if (Input.GetMouseButtonDown(0)) // GetMouseButtonDown para tiro único por clique
+        // Se for arma automática, use GetMouseButton(0) e controle a cadência com nextFireTime
         {
-            // NOVO DEBUG (ERRO): Informa que o Prefab do projétil está faltando.
-            Debug.LogError("ERRO DEBUG: Projectile Prefab não atribuído no GunScript! Arraste o prefab do projétil para o slot no Inspector.", this);
-            return;
+            // --- SUA LÓGICA DE TIRO PRINCIPAL VAI AQUI ---
+            // Exemplo:
+            // if (projectilePrefab != null && projectileSpawnPoint != null)
+            // {
+            //     Instantiate(projectilePrefab, projectileSpawnPoint.position, projectileSpawnPoint.rotation);
+            // }
+            // Debug.Log("Tiro disparado!"); // Placeholder
+            // --------------------------------------------
+
+            // Inicia a animação do sprite da arma, se não estiver tocando
+            if (weaponSpriteRenderer != null && shootAnimationFrames != null && shootAnimationFrames.Length > 0 && !isShootingAnimationPlaying)
+            {
+                StartCoroutine(PlayShootAnimation());
+            }
         }
-        if (muzzlePoint == null)
+    }
+
+    IEnumerator PlayShootAnimation()
+    {
+        isShootingAnimationPlaying = true;
+        
+        // Calcula o tempo de espera entre cada frame da animação
+        float delayBetweenFrames = 1.0f / animationFrameRate;
+
+        // Percorre todos os frames da animação de tiro
+        for (int i = 0; i < shootAnimationFrames.Length; i++)
         {
-            // NOVO DEBUG (ERRO): Informa que o Muzzle Point está faltando.
-            Debug.LogError("ERRO DEBUG: Muzzle Point não atribuído no GunScript! Crie um GameObject vazio na ponta da arma/câmera e arraste para o slot.", this);
-            return;
+            if (weaponSpriteRenderer != null && shootAnimationFrames[i] != null)
+            {
+                weaponSpriteRenderer.sprite = shootAnimationFrames[i];
+            }
+            yield return new WaitForSeconds(delayBetweenFrames);
         }
 
-        // 1. Instancia o projétil
-        // Cria uma nova instância do projectilePrefab na posição e rotação do muzzlePoint.
-        GameObject newProjectile = Instantiate(projectilePrefab, muzzlePoint.position, muzzlePoint.rotation);
-        // NOVO DEBUG: Confirma que o projétil foi instanciado.
-        Debug.Log("DEBUG: Projétil instanciado com sucesso.");
-
-        // 2. Aplica força ao projétil
-        // Pega o componente Rigidbody do projétil recém-criado.
-        Rigidbody rb = newProjectile.GetComponent<Rigidbody>();
-        if (rb != null)
+        // Após a animação, volta para o sprite "idle"
+        // (que você disse ser o último frame do GIF, então pode ser o último da animação
+        // ou um sprite específico que você arrastou para idleSprite)
+        if (weaponSpriteRenderer != null && idleSprite != null)
         {
-            // Aplica uma força na direção "forward" do muzzlePoint (que é a direção para onde a arma/câmera está olhando).
-            // ForceMode.VelocityChange: Aplica uma mudança instantânea de velocidade.
-            rb.AddForce(muzzlePoint.forward * projectileSpeed, ForceMode.VelocityChange);
-            // NOVO DEBUG: Confirma que a força foi aplicada.
-            Debug.Log($"DEBUG: Força de {projectileSpeed} aplicada ao projétil. Direção: {muzzlePoint.forward}");
+            weaponSpriteRenderer.sprite = idleSprite;
         }
-        else
-        {
-            // NOVO DEBUG (ERRO): Informa que o Rigidbody está faltando no Prefab do projétil.
-            Debug.LogError("ERRO DEBUG: O Prefab do Projétil não tem um componente Rigidbody! O projétil não se moverá. Verifique o Prefab.", newProjectile);
-        }
+        // Alternativamente, se o idle é SEMPRE o último frame da animação:
+        // else if (weaponSpriteRenderer != null && shootAnimationFrames.Length > 0)
+        // {
+        //     weaponSpriteRenderer.sprite = shootAnimationFrames[shootAnimationFrames.Length - 1];
+        // }
 
-        // Você pode adicionar mais efeitos visuais ou sonoros de disparo aqui (ex: flash de fogo, som do tiro).
+        isShootingAnimationPlaying = false;
     }
 }
