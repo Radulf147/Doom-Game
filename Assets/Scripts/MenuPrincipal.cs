@@ -5,10 +5,9 @@ public class MenuManager : MonoBehaviour
 {
     // Esta função será chamada pelo nosso botão "Novo Jogo"
     public void IniciarJogo()
-    {
-        // Coloque aqui o nome EXATO do arquivo da sua cena de jogo!
-SceneManager.LoadScene("Fase1");
-    }
-
+{
+    // Alterado para carregar a cena de seleção de personagem
+    SceneManager.LoadScene("SelecaoDePersonagem");
+}
     // Você pode adicionar outras funções para os outros botões aqui depois
 }
