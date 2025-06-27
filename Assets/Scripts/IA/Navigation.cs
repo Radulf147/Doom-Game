@@ -211,7 +211,7 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
             // Opcional: Se você quer parar todas as outras animações imediatamente e ir para a morte.
             // Se a sua transição de 'Any State' para 'Die' já cuida disso, não precisa de mais nada aqui.
         }
-        // --------------------------------------------------
+
     }
 
     void HandleAttacking()
