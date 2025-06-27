@@ -65,12 +65,23 @@ public class EnemyNavigation : MonoBehaviour
         this.enabled = true;
 
         // Resetar parâmetros do Animator se o objeto for reutilizado
-        if(animator != null)
+        // Dentro do Update()
+        if (animator != null)
         {
-            animator.SetBool("IsDead", false); // Garante que não esteja na animação de morte
-            animator.SetTrigger("ResetAttack"); // Se você tiver um trigger de reset, ou apenas não defina o "Attack"
-            animator.SetBool("IsMoving", false); // Começa parado
-            // Certifique-se que o Animator volta para o estado Idle/Walk padrão
+            // float speed = agent.velocity.magnitude;
+            // animator.SetFloat("Speed", speed); // Atualiza o parâmetro 'Speed' na Blend Tree
+
+            // Manter IsMoving para compatibilidade, ou removê-lo se 'Speed' for o único controle de movimento
+            // bool isMoving = speed > 0.1f && !agent.isStopped;
+            // animator.SetBool("IsMoving", isMoving);
+            
+            // Se você usar apenas 'Speed' para controlar a Blend Tree, remova a linha do SetBool("IsMoving")
+            // e o parâmetro IsMoving do Animator.
+            
+            // Para simplificar, pode manter IsMoving e a Blend Tree pode ser controlada por IsMoving,
+            // com apenas dois estados: Idle (0) e Walk/Run (1).
+            bool isMoving = agent.velocity.magnitude > 0.1f && !agent.isStopped;
+            animator.SetBool("IsMoving", isMoving);
         }
     }
 
