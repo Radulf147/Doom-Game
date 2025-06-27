@@ -3,17 +3,15 @@ using System.Collections;
 
 public class GunScript : MonoBehaviour
 {
-    // Suas variáveis existentes ...
+    // ... (suas variáveis existentes, não precisam mudar) ...
     [Header("Referências da Arma")]
-    // public GameObject projectilePrefab; // NÃO MAIS NECESSÁRIO para hitscan puro
-    public Transform muzzlePoint; // Ainda útil para efeitos visuais como muzzle flash
-    // [SerializeField] private float projectileSpeed = 30f; // NÃO MAIS NECESSÁRIO
+    public Transform muzzlePoint;
 
     [Header("Gun Settings")]
     [SerializeField] private float fireRate = 0.5f;
     private float nextFireTime;
-    public float weaponRange = 1000f; // Distância máxima do tiro hitscan
-    public int weaponDamage = 20;   // Dano da arma
+    public float weaponRange = 1000f;
+    public int weaponDamage = 20;
 
     [Header("Animação do Sprite da Arma")]
     public SpriteRenderer weaponSpriteRenderer;
@@ -24,9 +22,9 @@ public class GunScript : MonoBehaviour
     [Header("Som do Tiro")]
     public AudioClip shootSound;
 
-    [Header("Efeitos de Impacto (para Hitscan)")] // NOVO
-    public GameObject hitEffectPrefab; // Efeito de faíscas/poeira no ponto de impacto
-    public GameObject bulletHoleDecalPrefab; // Prefab do decalque de buraco de bala
+    [Header("Efeitos de Impacto (para Hitscan)")]
+    public GameObject hitEffectPrefab;
+    public GameObject bulletHoleDecalPrefab;
     public float decalOffset = 0.01f;
 
     private bool isShootingAnimationPlaying = false;
@@ -52,7 +50,6 @@ public class GunScript : MonoBehaviour
     {
         if (Input.GetButtonDown("Fire1") && Time.time >= nextFireTime)
         {
-            // Renomeado para FireHitscan()
             FireHitscan();
             nextFireTime = Time.time + fireRate;
 
@@ -65,7 +62,6 @@ public class GunScript : MonoBehaviour
 
     void FireHitscan()
     {
-        // 1. Tocar o som do tiro imediatamente
         if (gunAudioSource != null && shootSound != null)
         {
             gunAudioSource.PlayOneShot(shootSound);
@@ -75,28 +71,21 @@ public class GunScript : MonoBehaviour
             Debug.LogWarning("GunScript: AudioClip de tiro (Shoot Sound) não atribuído no Inspector.", this);
         }
 
-        // 2. Lançar o Raycast do centro da tela (mira)
         Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hitInfo;
 
-        Debug.Log("DEBUG (GunScript): Disparando Hitscan...");
-
-        if (Physics.Raycast(ray, out hitInfo, weaponRange)) // weaponRange define o alcance máximo
+        if (Physics.Raycast(ray, out hitInfo, weaponRange))
         {
-            Debug.Log("DEBUG (GunScript): Hitscan atingiu " + hitInfo.collider.name + " em " + hitInfo.point);
             Vector3 hitPoint = hitInfo.point;
             Vector3 hitNormal = hitInfo.normal;
 
-            // 3. Aplicar efeitos de impacto e dano
-            // Instancia efeito de impacto visual (faíscas, poeira)
             if (hitEffectPrefab != null)
             {
                 GameObject impactFX = Instantiate(hitEffectPrefab, hitPoint, Quaternion.LookRotation(hitNormal));
-                Destroy(impactFX, 2f); // Destrói o efeito após 2 segundos
+                Destroy(impactFX, 2f);
             }
 
-            // Instancia decalque de buraco de bala
-            if (bulletHoleDecalPrefab != null && hitInfo.collider.attachedRigidbody == null) // Só em objetos estáticos
+            if (bulletHoleDecalPrefab != null && hitInfo.collider.attachedRigidbody == null)
             {
                 Vector3 decalPosition = hitPoint + hitNormal * decalOffset;
                 Quaternion decalRotation = Quaternion.LookRotation(hitNormal) * Quaternion.Euler(0, 0, Random.Range(0f, 360f));
@@ -105,33 +94,32 @@ public class GunScript : MonoBehaviour
                 Destroy(decalInstance, 10f);
             }
 
-            // Tenta aplicar dano ao caixote destrutível
+            // --- LÓGICA DE DANO MODIFICADA AQUI ---
+            // Procuramos por QUALQUER objeto que tenha um script implementando "IDamageable".
+            // Pode ser o nosso zumbi, um caixote futuro, um chefe, etc.
+            IDamageable damageableObject = hitInfo.collider.GetComponentInParent<IDamageable>();
+            
+            if (damageableObject != null)
+            {
+                // Se encontramos algo "danificável", chamamos o método TakeDamage dele.
+                // A própria lógica do zumbi (ou de outro objeto) cuidará do que fazer com o dano.
+                Debug.Log("Atingiu um objeto danificável: " + hitInfo.collider.name);
+                damageableObject.TakeDamage(weaponDamage);
+            }
+
+            // A lógica específica do DestructibleCrate pode ser removida se você o modificar
+            // para também implementar IDamageable. Por enquanto, podemos deixar os dois.
             DestructibleCrate crate = hitInfo.collider.GetComponentInParent<DestructibleCrate>();
             if (crate != null)
             {
                 crate.TakeDamage(weaponDamage, hitPoint, hitNormal);
             }
-            // Adicione aqui lógica para danificar outros tipos de inimigos/objetos
-            // Ex: EnemyHealth enemy = hitInfo.collider.GetComponent<EnemyHealth>();
-            // if (enemy != null) { enemy.TakeDamage(weaponDamage); }
-
+            // --- FIM DA LÓGICA DE DANO ---
         }
-        else
-        {
-            Debug.Log("DEBUG (GunScript): Hitscan não atingiu nada dentro do alcance de " + weaponRange + " unidades.");
-            // Opcional: Você pode querer instanciar um "tracer" visual (um rastro de bala)
-            // que vai do muzzlePoint até um ponto distante na direção do raio, mesmo se nada for atingido.
-        }
-
-        // 4. Efeitos visuais da arma (Muzzle flash, etc. - Opcional)
-        // Se você tiver um efeito de "fogo" no cano da arma (muzzle flash), instancie-o aqui
-        // no seu 'muzzlePoint.position' e 'muzzlePoint.rotation'.
-        // Ex: if (muzzleFlashPrefab != null) Instantiate(muzzleFlashPrefab, muzzlePoint.position, muzzlePoint.rotation);
     }
 
     IEnumerator PlayShootAnimation()
     {
-        // Seu código de animação de sprite continua o mesmo
         isShootingAnimationPlaying = true;
         float delayBetweenFrames = 1.0f / animationFrameRate;
 

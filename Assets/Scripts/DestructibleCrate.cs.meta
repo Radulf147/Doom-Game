@@ -1,2 +1,16 @@
 fileFormatVersion: 2
 guid: a6acd947ac06cd544a744dfcb0ab1879
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - destroyedCratePrefab: {instanceID: 0}
+  - impactParticlePrefab: {instanceID: 0}
+  - finalDestroyParticlePrefab: {instanceID: 0}
+  - destroySound: {instanceID: 0}
+  - healthPackDropPrefab: {fileID: 4339252247093687908, guid: f00d66cf55372994a85a4e4e0368446b, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

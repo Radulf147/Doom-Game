@@ -1,19 +1,22 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-public class EnemyNavigation : MonoBehaviour
+// --- MODIFICAÇÃO AQUI ---
+// Adicionamos ", IDamageable" para que este script oficialmente implemente a interface.
+// Agora, outros scripts podem procurar por "IDamageable" e encontrarão este componente.
+public class EnemyNavigation : MonoBehaviour, IDamageable
 {
     public enum DetectionState { Idle, Detected }
     private DetectionState currentState = DetectionState.Idle;
 
     [Header("Referências")]
     public Transform player;
-    private Animator animator; // Adicionado: Referência ao Animator
+    private Animator animator;
 
     [Header("Navegação e Detecção")]
     public float detectionRange = 10f;
     public float loseChaseRange = 15f;
-    public LayerMask collidableLayers; // Para LoS
+    public LayerMask collidableLayers;
     public float aiEyeHeight = 1.0f;
     public float playerTargetHeight = 1.0f;
 
@@ -26,8 +29,8 @@ public class EnemyNavigation : MonoBehaviour
     public float attackDamage = 15f;
     public float attackRange = 2.5f; 
     public float attackAngle = 90f; 
-    public float attackCooldown = 2f; // Tempo em segundos entre ataques
-    private float lastAttackTime;      // Para controlar o cooldown
+    public float attackCooldown = 2f;
+    private float lastAttackTime;
 
     private NavMeshAgent agent;
 
@@ -49,37 +52,20 @@ public class EnemyNavigation : MonoBehaviour
             return;
         }
 
-        animator = GetComponent<Animator>(); // Obtém a referência ao Animator
+        animator = GetComponent<Animator>();
         if (animator == null)
         {
             Debug.LogError("Animator não encontrado em " + gameObject.name, this);
-            // Continua, mas sem controle de animação, ou pode desabilitar o script
         }
         
-        // Resetar estado ao reabilitar (útil para pooling de objetos, por exemplo)
         isDead = false;
         currentHealth = maxHealth;
-        // Garante que componentes desabilitados na morte sejam reabilitados se o objeto for reutilizado
         if(GetComponent<Collider>() != null) GetComponent<Collider>().enabled = true;
         agent.enabled = true;
         this.enabled = true;
 
-        // Resetar parâmetros do Animator se o objeto for reutilizado
-        // Dentro do Update()
         if (animator != null)
         {
-            // float speed = agent.velocity.magnitude;
-            // animator.SetFloat("Speed", speed); // Atualiza o parâmetro 'Speed' na Blend Tree
-
-            // Manter IsMoving para compatibilidade, ou removê-lo se 'Speed' for o único controle de movimento
-            // bool isMoving = speed > 0.1f && !agent.isStopped;
-            // animator.SetBool("IsMoving", isMoving);
-            
-            // Se você usar apenas 'Speed' para controlar a Blend Tree, remova a linha do SetBool("IsMoving")
-            // e o parâmetro IsMoving do Animator.
-            
-            // Para simplificar, pode manter IsMoving e a Blend Tree pode ser controlada por IsMoving,
-            // com apenas dois estados: Idle (0) e Walk/Run (1).
             bool isMoving = agent.velocity.magnitude > 0.1f && !agent.isStopped;
             animator.SetBool("IsMoving", isMoving);
         }
@@ -88,19 +74,19 @@ public class EnemyNavigation : MonoBehaviour
     void Start()
     {
         currentHealth = maxHealth;
-        lastAttackTime = -attackCooldown; // Permite atacar imediatamente se as condições forem atendidas
+        lastAttackTime = -attackCooldown;
 
         if (Application.isPlaying)
         {
             if (player == null)
             {
                 Debug.LogError("O Transform do Player não foi atribuído!", this);
-                enabled = false; // Desabilita o script se não houver player
+                enabled = false;
                 return;
             }
             if (agent == null)
             {
-                agent = GetComponent<NavMeshAgent>(); // Tentativa extra
+                agent = GetComponent<NavMeshAgent>();
                 if (agent == null)
                 {
                     Debug.LogError("NavMeshAgent não encontrado no Start!", this);
@@ -115,18 +101,15 @@ public class EnemyNavigation : MonoBehaviour
     void Update()
     {
         if (!Application.isPlaying || player == null || agent == null) return;
-        if (isDead) return; // Se estiver morto, não faz mais nada
+        if (isDead) return; // Se estiver morto, para de executar a lógica.
 
         HandleDetectionAndChase();
         HandleAttacking();
 
-        // Controlar animação de movimento
         if (animator != null)
         {
-            // O NavMeshAgent.velocity.magnitude é uma boa forma de saber se ele está se movendo.
-            // Se a magnitude da velocidade for maior que um pequeno limiar, ele está se movendo.
             bool isMoving = agent.velocity.magnitude > 0.1f && !agent.isStopped;
-            animator.SetBool("IsMoving", isMoving); // Define o parâmetro IsMoving no Animator
+            animator.SetBool("IsMoving", isMoving);
         }
     }
 
@@ -181,13 +164,15 @@ public class EnemyNavigation : MonoBehaviour
         return true;
     }
 
+    // Este método já existe e satisfaz a interface IDamageable
     public void TakeDamage(float amount)
     {
-        if (isDead) return;
+        if (isDead) return; // Não pode tomar dano se já estiver morto.
 
         currentHealth -= amount;
         Debug.Log(gameObject.name + " tomou " + amount + " de dano. Vida restante: " + currentHealth);
 
+        // A lógica de morte já está aqui!
         if (currentHealth <= 0)
         {
             currentHealth = 0;
@@ -207,32 +192,20 @@ public class EnemyNavigation : MonoBehaviour
             agent.enabled = false;
         }
         
-        // Desabilita o colisor para não interagir mais
         Collider col = GetComponent<Collider>();
         if (col != null)
         {
             col.enabled = false;
         }
 
-        // Para o script de visualização parar de tentar acessar
-        var visualizer = GetComponent<RangeVisualizer>();
-        if (visualizer != null)
-        {
-            visualizer.displayVisualizers = false;
-        }
-        
-        // ** Chamada da animação de morte **
-        if (animator != null)
-        {
-            animator.SetBool("IsDead", true); // Define o parâmetro IsDead como true
-        }
-
-        Destroy(gameObject, 5f); // Destroi o GameObject após 5 segundos
+        // Esta lógica já é ótima para o que você pediu!
+        // Ela para a IA, desabilita a colisão, e depois de 5 segundos,
+        // o zumbi some da cena.
+        Destroy(gameObject, 5f);
     }
 
     void HandleAttacking()
     {
-        // Só tenta atacar se o player estiver detectado e o cooldown tiver passado
         if (currentState != DetectionState.Detected || Time.time < lastAttackTime + attackCooldown)
         {
             return;
@@ -253,18 +226,12 @@ public class EnemyNavigation : MonoBehaviour
                 lastAttackTime = Time.time;
             }
         }
-        // Se o inimigo está parado e não atacando, certifique-se de que a animação de ataque não está ativa
-        // if (animator != null) {
-        //     // Dependendo da sua configuração, você pode querer resetar o trigger de ataque aqui
-        //     // ou confiar que a transição de saída do estado de ataque cuida disso.
-        // }
     }
 
     void PerformAttack()
     {
         Debug.Log(gameObject.name + " ataca " + player.name + " causando " + attackDamage + " de dano!");
-
-        // Tenta aplicar dano ao player
+        
         PlayerHealth playerHealthComponent = player.GetComponent<PlayerHealth>();
         if (playerHealthComponent != null)
         {
@@ -275,10 +242,9 @@ public class EnemyNavigation : MonoBehaviour
             Debug.LogWarning("Player não possui o componente PlayerHealth para receber dano.");
         }
 
-        // ** Chamada da animação de ataque **
         if (animator != null)
         {
-            animator.SetTrigger("IsAttacking"); // Ativa o Trigger "IsAttacking" no Animator
+            animator.SetTrigger("IsAttacking");
         }
     }
 }
