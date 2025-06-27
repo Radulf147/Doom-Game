@@ -189,19 +189,29 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
         {
             agent.isStopped = true;
             agent.ResetPath();
-            agent.enabled = false;
+            agent.enabled = false; // Desabilita o NavMeshAgent
         }
         
         Collider col = GetComponent<Collider>();
         if (col != null)
         {
-            col.enabled = false;
+            col.enabled = false; // Desabilita o colisor
         }
 
-        // Esta lógica já é ótima para o que você pediu!
-        // Ela para a IA, desabilita a colisão, e depois de 5 segundos,
-        // o zumbi some da cena.
-        Destroy(gameObject, 5f);
+        var visualizer = GetComponent<RangeVisualizer>();
+        if (visualizer != null)
+        {
+            visualizer.displayVisualizers = false;
+        }
+
+        // --- ADIÇÃO CRÍTICA AQUI: COMUNICAR AO ANIMATOR ---
+        if (animator != null)
+        {
+            animator.SetBool("IsDead", true); // Ativa o parâmetro "IsDead" no Animator
+            // Opcional: Se você quer parar todas as outras animações imediatamente e ir para a morte.
+            // Se a sua transição de 'Any State' para 'Die' já cuida disso, não precisa de mais nada aqui.
+        }
+        // --------------------------------------------------
     }
 
     void HandleAttacking()
