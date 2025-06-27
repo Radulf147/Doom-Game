@@ -12,7 +12,7 @@ public class PlayerFPController : MonoBehaviour
     public float upwardGravity = 25.0f;
     public float downwardGravity = 40.0f;
     public float earlyJumpReleaseMultiplier = 1.5f;
-    public float groundedGravity = 2.0f; // Valor ajustado para "grudar" melhor no chão
+    public float groundedGravity = 2.0f;
 
     private float _verticalVelocity = 0f;
 
@@ -37,6 +37,11 @@ public class PlayerFPController : MonoBehaviour
 
     [HideInInspector]
     public bool canMove = true;
+    
+    // --- ADICIONADO PARA O SISTEMA DE ESTAMINA ---
+    private StaminaController staminaController; // Referência ao controlador de estamina
+    private float speedModifier = 1.0f; // Multiplicador para a velocidade (1f = 100% da velocidade)
+    // --- FIM DAS ADIÇÕES ---
 
     void Start()
     {
@@ -68,6 +73,15 @@ public class PlayerFPController : MonoBehaviour
                 Debug.LogError("PlayerFPController: 'playerCameraTransform' não foi atribuído no Inspector e nenhuma câmera filha foi encontrada! A rotação vertical do mouse não funcionará corretamente. Por favor, atribua a câmera filha.");
             }
         }
+        
+        // --- ADICIONADO PARA O SISTEMA DE ESTAMINA ---
+        // Pega a referência ao StaminaController no mesmo GameObject
+        staminaController = GetComponent<StaminaController>();
+        if (staminaController == null)
+        {
+            Debug.LogError("PlayerFPController: StaminaController não encontrado no jogador! O sistema de estamina não funcionará.", this);
+        }
+        // --- FIM DA ADIÇÃO ---
     }
 
     void Update()
@@ -77,11 +91,16 @@ public class PlayerFPController : MonoBehaviour
 
         if (canMove)
         {
+            // --- LÓGICA DE VELOCIDADE MODIFICADA PARA ESTAMINA ---
             float actualSpeedForFrame = moveSpeed; 
-            if (Input.GetKey(KeyCode.LeftShift)) 
+            bool isTryingToRun = Input.GetKey(KeyCode.LeftShift);
+
+            // Verifica se o jogador está tentando correr E se tem permissão do StaminaController
+            if (isTryingToRun && staminaController != null && staminaController.CanRun())
             {
                 actualSpeedForFrame = sprintSpeed; 
             }
+            // Se ele tentar correr mas não puder (por estar exausto), a velocidade permanecerá como moveSpeed.
 
             Vector3 forward = transform.TransformDirection(Vector3.forward);
             Vector3 right = transform.TransformDirection(Vector3.right);
@@ -94,15 +113,19 @@ public class PlayerFPController : MonoBehaviour
             if (horizontalInputVector.sqrMagnitude > 0.01f) 
             {
                 horizontalInputVector.Normalize(); 
-                horizontalInputVector *= actualSpeedForFrame; 
+                horizontalInputVector *= actualSpeedForFrame;
+
+                // Aplica o modificador de velocidade (penalidade de exaustão)
+                horizontalInputVector *= speedModifier;
+
                 _currentAppliedSpeed = actualSpeedForFrame; 
             }
+            // --- FIM DA LÓGICA MODIFICADA ---
         }
 
-        // --- Lógica Vertical (Pulo e Gravidade) --- MODIFICADA AQUI ---
+        // --- Lógica Vertical (Pulo e Gravidade) ---
         if (characterController.isGrounded)
         {
-            // Aplica uma velocidade vertical negativa constante para manter "colado" ao chão/rampas
             _verticalVelocity = -Mathf.Abs(groundedGravity); 
 
             if (Input.GetButtonDown("Jump") && canMove)
@@ -127,15 +150,15 @@ public class PlayerFPController : MonoBehaviour
         }
 
         // --- Lógica dos Sons de Passos ---
-        bool isActuallyMovingOnGround = characterController.isGrounded && _currentAppliedSpeed > 0.01f && canMove;
-
-        if (isActuallyMovingOnGround)
+        if (IsMovingOnGround() && canMove)
         {
             stepTimer -= Time.deltaTime;
             if (stepTimer <= 0f)
             {
                 PlayFootstepSound();
-                bool isSprintingNow = (_currentAppliedSpeed == sprintSpeed);
+                // A velocidade do som dos passos agora também depende da permissão para correr
+                bool canCurrentlyRun = staminaController != null && staminaController.CanRun();
+                bool isSprintingNow = Input.GetKey(KeyCode.LeftShift) && canCurrentlyRun;
                 stepTimer = isSprintingNow ? sprintStepInterval : walkStepInterval; 
             }
         }
@@ -149,6 +172,7 @@ public class PlayerFPController : MonoBehaviour
 
         characterController.Move(finalMove * Time.deltaTime);
 
+        // --- Lógica da Visão do Mouse ---
         if (canMove && playerCameraTransform != null) 
         {
             rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
@@ -171,8 +195,31 @@ public class PlayerFPController : MonoBehaviour
             return; 
         }
 
-        bool isSprinting = (_currentAppliedSpeed == sprintSpeed);
+        bool canCurrentlyRun = staminaController != null && staminaController.CanRun();
+        bool isSprinting = Input.GetKey(KeyCode.LeftShift) && canCurrentlyRun;
         footstepAudioSource.pitch = isSprinting ? sprintPitch : walkPitch;
         footstepAudioSource.PlayOneShot(footstepSound);
     }
+    
+    // --- MÉTODOS PÚBLICOS ADICIONADOS PARA ESTAMINA ---
+    
+    /// <summary>
+    /// Permite que outros scripts (como o StaminaController) alterem a velocidade do jogador.
+    /// </summary>
+    /// <param name="modifier">O multiplicador a ser aplicado (ex: 0.5 para 50% da velocidade).</param>
+    public void ApplySpeedModifier(float modifier)
+    {
+        speedModifier = modifier;
+    }
+
+    /// <summary>
+    /// Permite que outros scripts (como o StaminaController) saibam se o jogador está se movendo no chão.
+    /// </summary>
+    /// <returns>Verdadeiro se o jogador está no chão e se movendo horizontalmente.</returns>
+    public bool IsMovingOnGround()
+    {
+        // Usa a lógica que já existia no Update para determinar o movimento no chão.
+        return characterController.isGrounded && _currentAppliedSpeed > 0.01f;
+    }
+    // --- FIM DOS MÉTODOS PÚBLICOS ---
 }
