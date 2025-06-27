@@ -7575,6 +7575,12 @@ MonoBehaviour:
   fireRate: 0.5
   weaponRange: 1000
   weaponDamage: 20
+  weaponAmmoType: 0
+  currentAmmo: 10
+  maxAmmoInClip: 6
+  currentReserveAmmo: 20
+  maxReserveAmmo: 60
+  reloadTime: 1.5
   weaponSpriteRenderer: {fileID: 2077047198}
   idleSprite: {fileID: 21300000, guid: 95a5f5e2d03e44748959b094343a5d86, type: 3}
   shootAnimationFrames:
@@ -7591,6 +7597,7 @@ MonoBehaviour:
   hitEffectPrefab: {fileID: 0}
   bulletHoleDecalPrefab: {fileID: 225056650}
   decalOffset: 0.01
+  ammoText: {fileID: 0}
 --- !u!114 &1454232515
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9111,13 +9118,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6acd947ac06cd544a744dfcb0ab1879, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lootType: 3
+  healthDropPrefab: {fileID: 5681662201888612616, guid: ad04a3f2bb2ab884fbde3647a51aa13b, type: 3}
+  revolverAmmoDropPrefab: {fileID: 0}
+  shotgunAmmoDropPrefab: {fileID: 9063641498765579896, guid: c77067b9781fabe4a8b0004bb84005df, type: 3}
   destroyedCratePrefab: {fileID: 2820236785397200279, guid: 4bf045e666a4aed4ea8a5b759f0fecba, type: 3}
-  explosionForce: 4
-  explosionRadius: 1
-  impactParticlePrefab: {fileID: 0}
-  finalDestroyParticlePrefab: {fileID: 0}
+  explosionForce: 10
+  explosionRadius: 2
   destroySound: {fileID: 0}
-  healthPackDropPrefab: {fileID: 5681662201888612616, guid: ad04a3f2bb2ab884fbde3647a51aa13b, type: 3}
 --- !u!54 &1680704686
 Rigidbody:
   m_ObjectHideFlags: 0
