@@ -5413,7 +5413,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7835375820343249927, guid: 6dc4cf4496348884d8ee27743ae38562, type: 3}
       propertyPath: anguloDispersao
-      value: 57
+      value: 61
       objectReference: {fileID: 0}
     - target: {fileID: -7835375820343249927, guid: 6dc4cf4496348884d8ee27743ae38562, type: 3}
       propertyPath: duracaoParticula
