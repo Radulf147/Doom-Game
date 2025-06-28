@@ -5407,6 +5407,26 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1676568939}
     m_Modifications:
+    - target: {fileID: -7835375820343249927, guid: 6dc4cf4496348884d8ee27743ae38562, type: 3}
+      propertyPath: forcaEmissao
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: -7835375820343249927, guid: 6dc4cf4496348884d8ee27743ae38562, type: 3}
+      propertyPath: anguloDispersao
+      value: 57
+      objectReference: {fileID: 0}
+    - target: {fileID: -7835375820343249927, guid: 6dc4cf4496348884d8ee27743ae38562, type: 3}
+      propertyPath: duracaoParticula
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: -7835375820343249927, guid: 6dc4cf4496348884d8ee27743ae38562, type: 3}
+      propertyPath: particulasPorPonto
+      value: 250
+      objectReference: {fileID: 0}
+    - target: {fileID: -7835375820343249927, guid: 6dc4cf4496348884d8ee27743ae38562, type: 3}
+      propertyPath: particulaSanguePrefab
+      value: 
+      objectReference: {fileID: 6343129726862215140, guid: fd6bd08478f98994089b049d0966890d, type: 3}
     - target: {fileID: 578376449398627443, guid: 6dc4cf4496348884d8ee27743ae38562, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.2
@@ -5951,6 +5971,25 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &920366623
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 920366617}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb9b2d8e86a13ab499f7177890a5fd74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  particulaSanguePrefab: {fileID: 6343129726862215140, guid: fd6bd08478f98994089b049d0966890d, type: 3}
+  particulasPorPonto: 250
+  forcaEmissao: 0.1
+  anguloDispersao: 66
+  duracaoParticula: 0.3
+  escalaParticulaMin: 0.5
+  escalaParticulaMax: 1.2
 --- !u!4 &923060332 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4286937248595956669, guid: 2f79b33e970aa464a978e550662078fc, type: 3}
@@ -8750,6 +8789,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: dbffe7e92ac707842a82a77b2970349c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 920366622}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: dbffe7e92ac707842a82a77b2970349c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 920366623}
   m_SourcePrefab: {fileID: 100100000, guid: dbffe7e92ac707842a82a77b2970349c, type: 3}
 --- !u!1001 &1391417486
 PrefabInstance:

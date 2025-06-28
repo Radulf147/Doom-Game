@@ -7,15 +7,22 @@ public class WeaponData : ScriptableObject
     public AmmoPickup.AmmoType weaponAmmoType;
 
     [Header("Configurações de Tiro")]
-    public GameObject projetilPrefab;
     public float danoDoProjetil = 20f;
     public float cadenciaDeTiro = 0.5f;
-    public float alcanceDoProjetil = 100f; 
+    public float alcanceDaArma = 1000f; // Campo adicionado
 
     [Header("Configurações de Espingarda")]
-    public int projeteisPorTiro = 1;     
-    public float fatorDeDispersao = 0f; 
+    [Tooltip("Quantos raios (projéteis) são disparados por tiro. Use 1 para armas normais.")]
+    public int projeteisPorTiro = 1;
+    [Tooltip("O fator de espalhamento dos tiros. Use 0 para precisão perfeita.")]
+    public float fatorDeDispersao = 0f;
+
     [Header("Configurações de Munição")]
     public int tamanhoDoPente = 6;
     public int municaoReservaMax = 60;
+    public float reloadTime = 1.5f; // Campo adicionado
+
+    [Header("Efeitos Visuais de Impacto")]
+    public GameObject hitEffectPrefab; // Efeito de faíscas/poeira no ponto de impacto
+    // O campo do decalque de buraco de bala foi removido como solicitado.
 }

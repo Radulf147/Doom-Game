@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: cb9b2d8e86a13ab499f7177890a5fd74
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - particulaSanguePrefab: {fileID: 6343129726862215140, guid: fd6bd08478f98994089b049d0966890d, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

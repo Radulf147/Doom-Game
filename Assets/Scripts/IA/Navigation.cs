@@ -12,6 +12,7 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
     [Header("Referências")]
     public Transform player;
     private Animator animator;
+    private EmissorSangue emissorSangue; // Referência para o emissor de sangue
 
     [Header("Navegação e Detecção")]
     public float detectionRange = 10f;
@@ -41,6 +42,13 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
     public float AttackAngle => attackAngle;
     public bool IsDead => isDead;
 
+
+    void Awake()
+    {
+        agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
+        emissorSangue = GetComponent<EmissorSangue>(); // Pega o componente do emissor de sangue
+    }
 
     void OnEnable()
     {
@@ -165,14 +173,20 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
     }
 
     // Este método já existe e satisfaz a interface IDamageable
-    public void TakeDamage(float amount)
+    public void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitDirection)
     {
-        if (isDead) return; // Não pode tomar dano se já estiver morto.
+        if (isDead) return;
 
         currentHealth -= amount;
         Debug.Log(gameObject.name + " tomou " + amount + " de dano. Vida restante: " + currentHealth);
 
-        // A lógica de morte já está aqui!
+        // Se um emissor de sangue foi encontrado no Awake, chama o método para criar o efeito
+        if (emissorSangue != null)
+        {
+            // A direção do "espirro" de sangue é oposta à direção de onde veio o tiro
+            emissorSangue.EmitirSangueEmPonto(hitPoint, -hitDirection);
+        }
+
         if (currentHealth <= 0)
         {
             currentHealth = 0;

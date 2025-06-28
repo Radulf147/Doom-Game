@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: EspingardaData
   m_EditorClassIdentifier: 
   weaponAmmoType: 0
-  projetilPrefab: {fileID: 1859409874428009692, guid: 0088cb6686ff4f140a35e5b17710a3ed, type: 3}
-  danoDoProjetil: 20
+  danoDoProjetil: 5
   cadenciaDeTiro: 0.5
-  alcanceDoProjetil: 25
+  alcanceDaArma: 1000
   projeteisPorTiro: 8
   fatorDeDispersao: 0.1
   tamanhoDoPente: 6
   municaoReservaMax: 60
+  reloadTime: 1.5
+  hitEffectPrefab: {fileID: 0}
