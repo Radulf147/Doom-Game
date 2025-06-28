@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CarlinhosData
   m_EditorClassIdentifier: 
   nomeDoPersonagem: Carlinhos
-  iconeRostoHUD: {fileID: 21300000, guid: a8e7439924def0048a3e4e7c8cfad561, type: 3}
+  iconeRostoHUD: {fileID: 21300000, guid: 97c760d09c0f1b74e8165d8abc14825a, type: 3}
   spriteArma2D: {fileID: 21300000, guid: aec038ea070aa1e4cbf54e251d774b47, type: 3}
   velocidadeMovimento: 5
   taxaDeAtaque: 1
