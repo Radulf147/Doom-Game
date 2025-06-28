@@ -59,7 +59,30 @@ public class PlayerHealth : MonoBehaviour
 
     void Die()
     {
-        Debug.Log(transform.name + " (Player) morreu!");
-        // Adicione aqui a lógica de morte do jogador
+        Debug.Log("Jogador morreu! Agora estou tentando encontrar o GameManager...");
+
+        // Tenta encontrar o GameManager na cena
+        GameManager gm = FindAnyObjectByType<GameManager>();
+
+        // Verifica se o GameManager foi encontrado
+        if (gm != null)
+        {
+            // Se encontrou, chama a função e avisa no console que deu certo
+            Debug.Log("GameManager ENCONTRADO! Chamando a tela de Game Over...");
+            gm.ChamarGameOver();
+        }
+        else
+        {
+            // Se NÃO encontrou, nos avisa com uma mensagem de erro vermelha!
+            Debug.LogError("ERRO CRÍTICO: Não foi possível encontrar o objeto GameManager na cena! Verifique se ele existe na Hierarchy e se o script está anexado.");
+        }
+
+        // O resto do seu código para desativar os scripts do jogador fica aqui...
+        // Exemplo:
+        // PlayerFPController moveScript = GetComponent<PlayerFPController>();
+        // if (moveScript != null)
+        // {
+        //     moveScript.enabled = false;
+        // }
     }
 }
