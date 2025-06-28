@@ -1,223 +1,127 @@
 using UnityEngine;
-using System.Collections;
-using TMPro; // Adicione esta linha para poder usar TextMeshPro
+using TMPro;
 
 public class GunScript : MonoBehaviour
 {
-    [Header("Referências da Arma")]
-    public Transform muzzlePoint;
+    // --- Atributos da Arma (Carregados pela Ficha de Dados) ---
+    private AmmoPickup.AmmoType weaponAmmoType;
+    private GameObject projetilPrefab;
+    private float danoDoProjetil;
+    private float cadencia;
+    private int tamanhoPente;
+    private int municaoNaReserva;
+    private int municaoReservaMax;
+    private int municaoNoPente;
 
-    [Header("Gun Settings")]
-    [SerializeField] private float fireRate = 0.5f;
-    private float nextFireTime;
-    public float weaponRange = 1000f;
-    public int weaponDamage = 20;
+    // NOVOS ATRIBUTOS
+    private float alcanceDoProjetil;
+    private int projeteisPorTiro;
+    private float fatorDeDispersao;
 
-    [Header("Configurações de Munição")]
-    public AmmoPickup.AmmoType weaponAmmoType;
-    public int currentAmmo;
-    public int maxAmmoInClip = 6;
-    public int currentReserveAmmo;
-    public int maxReserveAmmo = 60;
-    public float reloadTime = 1.5f;
-    private bool isReloading = false;
+    // ... resto das suas variáveis de controle ...
+    private float proximoTiroDisponivel = 0f;
+    
+    [Header("Referências da Cena (Arrastar no Inspector)")]
+    public Transform pontoDeDisparo;
+    public TextMeshProUGUI textoMunicao;
 
-    [Header("Animação do Sprite da Arma")]
-    public SpriteRenderer weaponSpriteRenderer;
-    public Sprite idleSprite;
-    public Sprite[] shootAnimationFrames;
-    public float animationFrameRate = 15f;
-
-    [Header("Som do Tiro")]
-    public AudioClip shootSound;
-    // Opcional: Adicione um som para quando a arma estiver vazia
-    // public AudioClip emptyClipSound;
-
-    [Header("Efeitos de Impacto (para Hitscan)")]
-    public GameObject hitEffectPrefab;
-    public GameObject bulletHoleDecalPrefab;
-    public float decalOffset = 0.01f;
-
-    [Header("Referências da UI de Munição")]
-    public TextMeshProUGUI ammoText;
-
-    private bool isShootingAnimationPlaying = false;
-    private AudioSource gunAudioSource;
+    private HUDManager hudManager;
 
     void Start()
     {
-        gunAudioSource = GetComponent<AudioSource>();
-        if (gunAudioSource == null)
-        {
-            gunAudioSource = gameObject.AddComponent<AudioSource>();
-        }
-        gunAudioSource.playOnAwake = false;
-        gunAudioSource.loop = false;
-
-        if (weaponSpriteRenderer != null && idleSprite != null)
-        {
-            weaponSpriteRenderer.sprite = idleSprite;
-        }
-        
-        currentAmmo = maxAmmoInClip;
-        UpdateAmmoUI();
+        hudManager = FindObjectOfType<HUDManager>();
     }
-    
-    void OnEnable()
+
+    // ATUALIZADO: Carregar as novas propriedades
+    public void CarregarDadosDaArma(WeaponData data)
     {
-        isReloading = false;
-        UpdateAmmoUI();
+        this.weaponAmmoType = data.weaponAmmoType;
+        this.projetilPrefab = data.projetilPrefab;
+        this.danoDoProjetil = data.danoDoProjetil;
+        this.cadencia = data.cadenciaDeTiro;
+        this.tamanhoPente = data.tamanhoDoPente;
+        this.municaoReservaMax = data.municaoReservaMax;
+
+        // CARREGANDO OS NOVOS DADOS
+        this.alcanceDoProjetil = data.alcanceDoProjetil;
+        this.projeteisPorTiro = data.projeteisPorTiro;
+        this.fatorDeDispersao = data.fatorDeDispersao;
+
+        this.municaoNoPente = this.tamanhoPente;
+        this.municaoNaReserva = this.municaoReservaMax;
+        AtualizarUI();
     }
 
+    // ... seu método Update() continua igual ...
     void Update()
     {
-        // Se estiver recarregando, não faz mais nada.
-        if (isReloading) return;
-
-        // Tenta atirar se o botão for pressionado e o tempo de espera tiver passado.
-        if (Input.GetButton("Fire1") && Time.time >= nextFireTime) // Usando GetButton para tiros automáticos se segurar
+        if (Input.GetButton("Fire1") && Time.time >= proximoTiroDisponivel)
         {
-            AttemptToFire();
-        }
-
-        // Inicia a recarga com a tecla R.
-        if (Input.GetKeyDown(KeyCode.R) && currentAmmo < maxAmmoInClip && currentReserveAmmo > 0)
-        {
-            StartCoroutine(Reload());
+            Atirar();
         }
     }
 
-    void AttemptToFire()
+
+    // MÉTODO ATIRAR COMPLETAMENTE REFEITO
+    private void Atirar()
     {
-        // Só atira se tiver munição no pente.
-        if (currentAmmo > 0)
+        if (municaoNoPente <= 0 || projetilPrefab == null)
         {
-            FireHitscan(); // Chama a lógica do tiro
-            nextFireTime = Time.time + fireRate; // Define o tempo para o próximo tiro
+            return;
         }
-        else
+
+        proximoTiroDisponivel = Time.time + cadencia;
+        municaoNoPente--;
+
+        // Toca a animação e o som uma vez por clique
+        if(hudManager != null) hudManager.PlayAnimacaoTiro();
+        // Adicione aqui a lógica do som do tiro
+
+        // Loop para criar múltiplos projéteis (se for uma espingarda)
+        for (int i = 0; i < projeteisPorTiro; i++)
         {
-            // Se tentar atirar sem munição, toca um som de clique (se configurado)
-            // e tenta recarregar automaticamente se houver munição na reserva.
-            if (Time.time >= nextFireTime) // Evita múltiplos sons de clique por segundo
+            // Calcula a dispersão (spread) para cada projétil
+            Vector3 direcaoDoTiro = pontoDeDisparo.forward;
+            Vector3 dispersao = new Vector3(
+                Random.Range(-fatorDeDispersao, fatorDeDispersao),
+                Random.Range(-fatorDeDispersao, fatorDeDispersao),
+                0
+            );
+            // Rotaciona a dispersão para alinhar com a mira do jogador
+            dispersao = pontoDeDisparo.TransformDirection(dispersao);
+            
+            // Instancia o projétil
+            GameObject projetil = Instantiate(
+                projetilPrefab,
+                pontoDeDisparo.position,
+                Quaternion.LookRotation(direcaoDoTiro + dispersao) // Aplica a dispersão na rotação
+            );
+            
+            // Passa a informação de dano E ALCANCE para o projétil
+            if (projetil.GetComponent<ProjectileController>() != null)
             {
-                Debug.Log("Arma sem munição!");
-                // if (gunAudioSource != null && emptyClipSound != null)
-                // {
-                //     gunAudioSource.PlayOneShot(emptyClipSound);
-                // }
-                nextFireTime = Time.time + fireRate;
-
-                // Tenta recarregar automaticamente
-                if (currentReserveAmmo > 0)
-                {
-                    StartCoroutine(Reload());
-                }
+                projetil.GetComponent<ProjectileController>().Inicializar(danoDoProjetil, alcanceDoProjetil);
             }
-        }
-    }
-
-    IEnumerator Reload()
-    {
-        isReloading = true;
-        Debug.Log("Recarregando...");
-        // Tocar som de recarga aqui (opcional)
-
-        yield return new WaitForSeconds(reloadTime);
-
-        int ammoNeeded = maxAmmoInClip - currentAmmo;
-        int ammoToMove = Mathf.Min(ammoNeeded, currentReserveAmmo);
-
-        currentAmmo += ammoToMove;
-        currentReserveAmmo -= ammoToMove;
-        
-        UpdateAmmoUI();
-        isReloading = false;
-    }
-
-    void FireHitscan()
-    {
-        currentAmmo--; // Gasta uma bala
-        UpdateAmmoUI();
-        
-        // --- CORREÇÃO AQUI: A ANIMAÇÃO E O SOM SÃO CHAMADOS DENTRO DO TIRO REAL ---
-        // Inicia a animação do sprite do tiro
-        if (weaponSpriteRenderer != null && shootAnimationFrames != null && shootAnimationFrames.Length > 0 && !isShootingAnimationPlaying)
-        {
-            StartCoroutine(PlayShootAnimation());
-        }
-
-        // Toca o som do tiro
-        if (gunAudioSource != null && shootSound != null)
-        {
-            gunAudioSource.PlayOneShot(shootSound);
         }
         
-        Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-        RaycastHit hitInfo;
-        
-        if (Physics.Raycast(ray, out hitInfo, weaponRange))
-        {
-            // Toda a sua lógica de impacto, dano e decalques continua a mesma aqui...
-            Vector3 hitPoint = hitInfo.point;
-            Vector3 hitNormal = hitInfo.normal;
-
-            if (hitEffectPrefab != null)
-            {
-                Instantiate(hitEffectPrefab, hitPoint, Quaternion.LookRotation(hitNormal));
-            }
-
-            if (bulletHoleDecalPrefab != null && hitInfo.collider.attachedRigidbody == null)
-            {
-                GameObject decalInstance = Instantiate(bulletHoleDecalPrefab, hitPoint + hitNormal * decalOffset, Quaternion.LookRotation(hitNormal));
-                decalInstance.transform.SetParent(hitInfo.transform);
-                Destroy(decalInstance, 10f);
-            }
-
-            IDamageable damageableObject = hitInfo.collider.GetComponentInParent<IDamageable>();
-            if (damageableObject != null)
-            {
-                damageableObject.TakeDamage(weaponDamage);
-            }
-        }
+        AtualizarUI();
     }
-    
-    public void AddAmmo(int amount, AmmoPickup.AmmoType type)
+
+    // ... seu método AddAmmo() e AtualizarUI() continuam iguais ...
+    public void AddAmmo(int quantidade, AmmoPickup.AmmoType tipoDaMunicaoRecebida)
     {
-        if (type == weaponAmmoType)
+        if (tipoDaMunicaoRecebida == this.weaponAmmoType)
         {
-            currentReserveAmmo += amount;
-            currentReserveAmmo = Mathf.Min(currentReserveAmmo, maxReserveAmmo);
-            UpdateAmmoUI();
-        }
-    }
-    
-    void UpdateAmmoUI()
-    {
-        if (ammoText != null)
-        {
-            ammoText.text = currentAmmo + " / " + currentReserveAmmo;
+            municaoNaReserva += quantidade;
+            if (municaoNaReserva > municaoReservaMax)
+                municaoNaReserva = municaoReservaMax;
+            AtualizarUI();
         }
     }
 
-    IEnumerator PlayShootAnimation()
+    private void AtualizarUI()
     {
-        isShootingAnimationPlaying = true;
-        float delayBetweenFrames = 1.0f / animationFrameRate;
-
-        for (int i = 0; i < shootAnimationFrames.Length; i++)
-        {
-            if (weaponSpriteRenderer != null && shootAnimationFrames[i] != null)
-            {
-                weaponSpriteRenderer.sprite = shootAnimationFrames[i];
-            }
-            yield return new WaitForSeconds(delayBetweenFrames);
-        }
-
-        if (weaponSpriteRenderer != null && idleSprite != null)
-        {
-            weaponSpriteRenderer.sprite = idleSprite;
-        }
-        isShootingAnimationPlaying = false;
+        if (textoMunicao != null)
+            textoMunicao.text = municaoNoPente + " / " + municaoNaReserva;
     }
 }
