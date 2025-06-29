@@ -1,9 +1,9 @@
-// Adicionamos Vector3 para o ponto de impacto e a direção
+// IDamageable.cs
 using UnityEngine;
 
 public interface IDamageable
 {
-    // Agora, qualquer objeto "danificável" DEVE ter um método TakeDamage
-    // que aceita a quantidade, a posição e a direção do dano.
-    void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitDirection);
+    // Adicionamos 'HitType hitType = HitType.Unknown' com um valor padrÃ£o,
+    // para que chamadas existentes que nÃ£o especificam o tipo ainda funcionem.
+    void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitDirection, HitType hitType = HitType.Unknown);
 }

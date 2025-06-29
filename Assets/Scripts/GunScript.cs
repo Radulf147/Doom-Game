@@ -1,12 +1,11 @@
 // GunScript.cs
 using UnityEngine;
 using System.Collections;
-using TMPro; // Certifique-se de ter TextMeshPro importado no seu projeto
+using TMPro;
 
 public class GunScript : MonoBehaviour
 {
     // --- Atributos da Arma (Carregados pela Ficha de Dados) ---
-    // (Presumimos que WeaponData é um ScriptableObject ou classe que armazena esses dados)
     private AmmoPickup.AmmoType weaponAmmoType;
     private float dano; // Este é o DANO BASE da arma (sem multiplicadores de headshot)
     private float cadencia;
@@ -160,8 +159,8 @@ public class GunScript : MonoBehaviour
             if (damageableObject != null)
             {
                 // Se for um objeto IDamageable genérico, aplica o dano BASE da arma.
-                // Não há multiplicador de parte do corpo aqui.
-                damageableObject.TakeDamage(dano, hitPoint, incomingHitDirection);
+                // Passa HitType.BodyShot como o tipo de acerto padrão para tiros de arma.
+                damageableObject.TakeDamage(dano, hitPoint, incomingHitDirection, HitType.BodyShot);
             }
             else
             {

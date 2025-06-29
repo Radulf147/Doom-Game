@@ -25,7 +25,7 @@ public class DestructibleCrate : MonoBehaviour, IDamageable
     private bool isDestroyed = false;
 
     // --- MÉTODO TakeDamage MODIFICADO PARA CORRESPONDER À INTERFACE ---
-    public void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitDirection)
+    public void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitDirection, HitType hitType = HitType.Unknown)
     {
         if (isDestroyed) return;
 

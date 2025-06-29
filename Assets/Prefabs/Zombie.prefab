@@ -2383,6 +2383,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyNavigationManager: {fileID: 3598719544384792689}
   damageMultiplier: 1
+  limbHitType: 2
 --- !u!1 &7013939346216449797
 GameObject:
   m_ObjectHideFlags: 0
@@ -2706,6 +2707,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyNavigationManager: {fileID: 3598719544384792689}
   damageMultiplier: 10
+  limbHitType: 1
 --- !u!1 &7279166250328305552
 GameObject:
   m_ObjectHideFlags: 0

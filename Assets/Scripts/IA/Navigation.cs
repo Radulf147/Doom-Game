@@ -25,6 +25,7 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
     public float maxHealth = 100f;
     private float currentHealth;
     private bool isDead = false;
+    private HitType lastHitType = HitType.Unknown; // NOVO: Armazena o tipo do último acerto
 
     [Header("Configurações de Ataque")]
     public float attackDamage = 15f;
@@ -79,6 +80,7 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
         
         isDead = false;
         currentHealth = maxHealth;
+        lastHitType = HitType.Unknown; // Reseta o tipo de acerto ao habilitar
         // Habilita os colisores, incluindo o do próprio inimigo (se existir)
         Collider[] allColliders = GetComponentsInChildren<Collider>();
         foreach (Collider col in allColliders)
@@ -189,13 +191,14 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
         return true;
     }
 
-    // Este método é chamado pelo EnemyLimbDamageReceiver (já recebe o dano final com o multiplicador)
-    public void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitDirection)
+    // Este método é chamado pelo EnemyLimbDamageReceiver ou por um ataque corpo a corpo do jogador
+    public void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitDirection, HitType hitType = HitType.Unknown)
     {
         if (isDead) return;
 
         currentHealth -= amount;
-        Debug.Log(gameObject.name + " tomou " + amount + " de dano. Vida restante: " + currentHealth);
+        lastHitType = hitType; // Armazena o tipo do último acerto que causou dano
+        Debug.Log(gameObject.name + " tomou " + amount + " de dano. Vida restante: " + currentHealth + " (Tipo de Acerto: " + hitType + ")");
 
         // Se um emissor de sangue foi encontrado no Awake, chama o método para criar o efeito
         if (emissorSangue != null)
@@ -215,6 +218,16 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
         if (isDead) return;
         isDead = true;
         Debug.Log(gameObject.name + " morreu.");
+
+        // Adiciona pontos com base no tipo de acerto que causou a morte
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.AddScoreForEnemyKill(lastHitType);
+        }
+        else
+        {
+            Debug.LogWarning("ScoreManager.Instance não encontrado. Pontos não serão adicionados.");
+        }
 
         OnEnemyDied?.Invoke(this);
 
@@ -280,6 +293,7 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
         {
             // O inimigo atacando o jogador não precisa de dano localizado,
             // então TakeDamage pode ser chamado diretamente.
+            // Se o PlayerHealth também usa IDamageable, ele deve ter um método TakeDamage similar.
             playerHealthComponent.TakeDamage(attackDamage);
         }
         else
