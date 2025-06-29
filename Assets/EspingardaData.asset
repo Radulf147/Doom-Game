@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: EspingardaData
   m_EditorClassIdentifier: 
   weaponAmmoType: 0
-  danoDoProjetil: 5
+  danoDoProjetil: 10
   cadenciaDeTiro: 0.5
   alcanceDaArma: 1000
   projeteisPorTiro: 8

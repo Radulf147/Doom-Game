@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -8,9 +9,10 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
 {
     public enum DetectionState { Idle, Detected }
     private DetectionState currentState = DetectionState.Idle;
+    public static event Action<EnemyNavigation> OnEnemyDied;
 
     [Header("Referências")]
-    public Transform player;
+    private Transform player;
     private Animator animator;
     private EmissorSangue emissorSangue; // Referência para o emissor de sangue
 
@@ -48,6 +50,17 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
         emissorSangue = GetComponent<EmissorSangue>(); // Pega o componente do emissor de sangue
+
+        GameObject playerGameObject = GameObject.FindWithTag("Player");
+        if (playerGameObject != null)
+        {
+            player = playerGameObject.transform;
+        }
+        else
+        {
+            Debug.LogError("Objeto com a tag 'Player' não encontrado na cena! O inimigo não conseguirá se referenciar ao jogador.", this);
+            enabled = false; // Desabilita o script se o jogador não for encontrado
+        }
     }
 
     void OnEnable()
@@ -196,8 +209,11 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
 
     void Die()
     {
+        if (isDead) return;
         isDead = true;
         Debug.Log(gameObject.name + " morreu.");
+
+        OnEnemyDied?.Invoke(this);
 
         if (agent != null)
         {
@@ -221,10 +237,11 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
         // --- ADIÇÃO CRÍTICA AQUI: COMUNICAR AO ANIMATOR ---
         if (animator != null)
         {
-            animator.SetBool("IsDead", true); // Ativa o parâmetro "IsDead" no Animator
-            // Opcional: Se você quer parar todas as outras animações imediatamente e ir para a morte.
-            // Se a sua transição de 'Any State' para 'Die' já cuida disso, não precisa de mais nada aqui.
+            animator.SetTrigger("IsDead");
         }
+
+        // Destrói o objeto após um tempo para a animação tocar
+        Destroy(gameObject, 5f);
 
     }
 
