@@ -17,6 +17,7 @@ public class PlayerHealth : MonoBehaviour
         {
             healthBar.maxValue = maxHealth;
         }
+        Debug.Log("UM NOVO JOGADOR ACABA DE 'NASCER' NA CENA!");
         UpdateHealthBar();
     }
 

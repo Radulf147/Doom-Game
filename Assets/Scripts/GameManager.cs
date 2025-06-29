@@ -4,9 +4,9 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
-    public CharacterData personagemSelecionado;
+    public CharacterData personagemSelecionado; // Sua variável de personagem
 
-    // A referência ainda é pública, mas agora será preenchida automaticamente.
+    // A referência para a UI de Game Over
     public GameObject telaDeGameOver;
 
     private void Awake()
@@ -14,83 +14,86 @@ public class GameManager : MonoBehaviour
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
+            return;
         }
-        else
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
+        
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
 
-            // --- LÓGICA NOVA ---
-            // "Inscreve" o método OnSceneLoaded para ser chamado toda vez que uma cena carregar.
-            SceneManager.sceneLoaded += OnSceneLoaded;
-        }
+        // "Inscreve" um método para ser chamado toda vez que uma cena for carregada
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    // --- FUNÇÃO NOVA ---
-    // Esta função é chamada automaticamente pela Unity quando uma nova cena termina de carregar.
-   // Esta função é chamada automaticamente pela Unity quando uma nova cena termina de carregar.
-void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-{
-    // Verifica se a cena carregada é a nossa cena de jogo
-    if (scene.name == "Fase1") // << Verifique se "Fase1" é o nome exato da sua cena!
+    // Esta é a função que será chamada sempre que uma cena carregar
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log("Cena 'Fase1' carregada. Procurando pelo Canvas da UI...");
-        
-        // 1. Encontra o Canvas que está sempre ATIVO.
-        //    Verifique se o seu Canvas se chama "Canvas_GameOver".
-        GameObject canvasPai = GameObject.Find("Canvas_GameOver");
-
-        if (canvasPai != null)
+        // Só executa a lógica se estivermos na cena do jogo
+        if (scene.name == "Fase1") // << VERIFIQUE SE O NOME DA SUA CENA É "Fase1"
         {
-            // 2. Procura pelo painel DENTRO do Canvas.
-            //    Isto funciona mesmo que o 'PainelGameOver' esteja desativado!
-            Transform painelTransform = canvasPai.transform.Find("PainelGameOver");
+            // 1. Procura pelo Canvas PAI, que deve estar sempre ATIVO.
+            GameObject canvasPai = GameObject.Find("Canvas_GameOver");
 
-            if (painelTransform != null)
+            if (canvasPai != null)
             {
-                // 3. Guarda a referência e garante que está desativado.
-                telaDeGameOver = painelTransform.gameObject;
-                telaDeGameOver.SetActive(false);
-                Debug.Log("SUCESSO! Tela de Game Over encontrada através do Canvas pai!");
+                // 2. Procura pelo painel FILHO dentro do Canvas.
+                // Este comando funciona mesmo que o "PainelGameOver" esteja desativado.
+                Transform painelTransform = canvasPai.transform.Find("PainelGameOver");
+
+                if (painelTransform != null)
+                {
+                    // 3. Guarda a referência e garante que ele comece desativado.
+                    telaDeGameOver = painelTransform.gameObject;
+                    telaDeGameOver.SetActive(false);
+                    Debug.Log("SUCESSO! Tela de Game Over foi encontrada e configurada!");
+                }
+                else
+                {
+                    Debug.LogError("ERRO: O Canvas 'Canvas_GameOver' foi encontrado, mas não foi possível encontrar o filho 'PainelGameOver' dentro dele! Verifique o nome do painel.");
+                }
             }
             else
             {
-                Debug.LogError("ERRO: O Canvas 'Canvas_GameOver' foi encontrado, mas não foi possível encontrar o filho 'PainelGameOver' dentro dele! Verifique se o painel está dentro do canvas e se o nome está correto.");
+                Debug.LogError("ERRO CRÍTICO: Não foi possível encontrar o Canvas chamado 'Canvas_GameOver'. Verifique o nome do seu Canvas na Hierarchy.");
             }
         }
-        else
-        {
-            Debug.LogError("ERRO CRÍTICO: Não foi possível encontrar o Canvas chamado 'Canvas_GameOver' na cena! Verifique o nome do seu Canvas na Hierarchy.");
-        }
     }
-}
 
-    // Função que será chamada quando o jogador morrer
+    // Função que mostra a tela de Game Over
     public void ChamarGameOver()
     {
         if (telaDeGameOver != null)
         {
             telaDeGameOver.SetActive(true);
+            Time.timeScale = 0f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
-        Time.timeScale = 0f;
+        else
+        {
+             Debug.LogError("ChamarGameOver foi chamado, mas a referência para telaDeGameOver é NULA!");
+        }
     }
 
-    // Função para o botão "Tentar Novamente"
+    // Funções dos botões
     public void TentarNovamente()
     {
+        if (telaDeGameOver != null)
+        {
+            telaDeGameOver.SetActive(false);
+        }
         Time.timeScale = 1f;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    // Função para o botão "Voltar ao Menu"
     public void VoltarAoMenu()
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene("TelaInicial");
     }
-    
-    // --- LÓGICA NOVA ---
-    // É uma boa prática "desinscrever" o evento quando o objeto for destruído para evitar erros.
+
+    // Desinscreve o evento quando o GameManager for destruído
     private void OnDestroy()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
