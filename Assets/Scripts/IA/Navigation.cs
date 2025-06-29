@@ -1,10 +1,8 @@
+// EnemyNavigation.cs
 using System;
 using UnityEngine;
 using UnityEngine.AI;
 
-// --- MODIFICAÇÃO AQUI ---
-// Adicionamos ", IDamageable" para que este script oficialmente implemente a interface.
-// Agora, outros scripts podem procurar por "IDamageable" e encontrarão este componente.
 public class EnemyNavigation : MonoBehaviour, IDamageable
 {
     public enum DetectionState { Idle, Detected }
@@ -14,7 +12,7 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
     [Header("Referências")]
     private Transform player;
     private Animator animator;
-    private EmissorSangue emissorSangue; // Referência para o emissor de sangue
+    private EmissorSangue emissorSangue; // Referência para o emissor de sangue (garanta que este script exista)
 
     [Header("Navegação e Detecção")]
     public float detectionRange = 10f;
@@ -81,7 +79,13 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
         
         isDead = false;
         currentHealth = maxHealth;
-        if(GetComponent<Collider>() != null) GetComponent<Collider>().enabled = true;
+        // Habilita os colisores, incluindo o do próprio inimigo (se existir)
+        Collider[] allColliders = GetComponentsInChildren<Collider>();
+        foreach (Collider col in allColliders)
+        {
+            col.enabled = true;
+        }
+
         agent.enabled = true;
         this.enabled = true;
 
@@ -185,7 +189,7 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
         return true;
     }
 
-    // Este método já existe e satisfaz a interface IDamageable
+    // Este método é chamado pelo EnemyLimbDamageReceiver (já recebe o dano final com o multiplicador)
     public void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitDirection)
     {
         if (isDead) return;
@@ -196,7 +200,6 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
         // Se um emissor de sangue foi encontrado no Awake, chama o método para criar o efeito
         if (emissorSangue != null)
         {
-            // A direção do "espirro" de sangue é oposta à direção de onde veio o tiro
             emissorSangue.EmitirSangueEmPonto(hitPoint, -hitDirection);
         }
 
@@ -222,10 +225,11 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
             agent.enabled = false; // Desabilita o NavMeshAgent
         }
         
-        Collider col = GetComponent<Collider>();
-        if (col != null)
+        // Desabilita todos os colisores no inimigo e seus filhos
+        Collider[] allColliders = GetComponentsInChildren<Collider>();
+        foreach (Collider col in allColliders)
         {
-            col.enabled = false; // Desabilita o colisor
+            col.enabled = false;
         }
 
         var visualizer = GetComponent<RangeVisualizer>();
@@ -234,7 +238,6 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
             visualizer.displayVisualizers = false;
         }
 
-        // --- ADIÇÃO CRÍTICA AQUI: COMUNICAR AO ANIMATOR ---
         if (animator != null)
         {
             animator.SetTrigger("IsDead");
@@ -242,7 +245,6 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
 
         // Destrói o objeto após um tempo para a animação tocar
         Destroy(gameObject, 5f);
-
     }
 
     void HandleAttacking()
@@ -276,6 +278,8 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
         PlayerHealth playerHealthComponent = player.GetComponent<PlayerHealth>();
         if (playerHealthComponent != null)
         {
+            // O inimigo atacando o jogador não precisa de dano localizado,
+            // então TakeDamage pode ser chamado diretamente.
             playerHealthComponent.TakeDamage(attackDamage);
         }
         else

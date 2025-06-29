@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: ColtData
   m_EditorClassIdentifier: 
   weaponAmmoType: 0
-  projetilPrefab: {fileID: 1859409874428009692, guid: 0088cb6686ff4f140a35e5b17710a3ed, type: 3}
-  danoDoProjetil: 20
+  danoDoProjetil: 15
   cadenciaDeTiro: 0.5
-  alcanceDoProjetil: 500
+  alcanceDaArma: 10
   projeteisPorTiro: 1
   fatorDeDispersao: 0
   tamanhoDoPente: 6
   municaoReservaMax: 60
+  reloadTime: 1.5
+  hitEffectPrefab: {fileID: 0}

@@ -15,7 +15,7 @@ MonoBehaviour:
   nomeDoPersonagem: Rick
   iconeRostoHUD: {fileID: 21300000, guid: 1a2795efc38547d4fae5d4a19e36c0f9, type: 3}
   spriteArma2D: {fileID: 21300000, guid: 95a5f5e2d03e44748959b094343a5d86, type: 3}
-  velocidadeMovimento: 5
+  velocidadeMovimento: 6
   taxaDeAtaque: 1
-  regeneraVida: 0
+  regeneraVida: 1
   dadosDaArma: {fileID: 11400000, guid: cb8eacebb5d2b4c46be11591242013e8, type: 2}

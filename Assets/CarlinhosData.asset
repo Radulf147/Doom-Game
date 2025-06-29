@@ -17,5 +17,5 @@ MonoBehaviour:
   spriteArma2D: {fileID: 21300000, guid: aec038ea070aa1e4cbf54e251d774b47, type: 3}
   velocidadeMovimento: 5
   taxaDeAtaque: 1
-  regeneraVida: 0
+  regeneraVida: 1
   dadosDaArma: {fileID: 11400000, guid: 8105415680e1a7a4abb6693832d708e1, type: 2}
