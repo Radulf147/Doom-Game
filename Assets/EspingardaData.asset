@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bbb170c368839e4396b034da782f5b4, type: 3}
   m_Name: EspingardaData
   m_EditorClassIdentifier: 
-  weaponAmmoType: 0
+  weaponAmmoType: 1
   danoDoProjetil: 20
   cadenciaDeTiro: 0.5
   alcanceDaArma: 7.5

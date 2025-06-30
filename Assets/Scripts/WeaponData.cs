@@ -9,7 +9,7 @@ public class WeaponData : ScriptableObject
     [Header("Configurações de Tiro")]
     public float danoDoProjetil = 20f;
     public float cadenciaDeTiro = 0.5f;
-    public float alcanceDaArma = 1000f; // Campo adicionado
+    public float alcanceDaArma = 1000f;
 
     [Header("Configurações de Espingarda")]
     [Tooltip("Quantos raios (projéteis) são disparados por tiro. Use 1 para armas normais.")]
@@ -20,9 +20,12 @@ public class WeaponData : ScriptableObject
     [Header("Configurações de Munição")]
     public int tamanhoDoPente = 6;
     public int municaoReservaMax = 60;
-    public float reloadTime = 1.5f; // Campo adicionado
+    public float reloadTime = 1.5f;
 
     [Header("Efeitos Visuais de Impacto")]
-    public GameObject hitEffectPrefab; // Efeito de faíscas/poeira no ponto de impacto
-    // O campo do decalque de buraco de bala foi removido como solicitado.
+    public GameObject hitEffectPrefab;
+
+    [Header("Animações")]
+    // MODIFICAÇÃO: Este é o campo que guardará o conjunto de animações da arma.
+    public AnimatorOverrideController animadorDaArma;
 }

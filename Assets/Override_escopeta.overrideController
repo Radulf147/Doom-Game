@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Override_escopeta
+  m_Controller: {fileID: 9100000, guid: 2da706c9949009a499edb758dc93ac51, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: 9e733ea651b4a8648bfda537c0a58cd0, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 1cacc5e5903663d438c0303a967fe7de, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 548828412d3ebaf4787f4002ab2c94aa, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: f95e44238ed7db341bd873174d1f83e8, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 4a57df891f4f91648898cc5d221478fa, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 4a57df891f4f91648898cc5d221478fa, type: 2}

@@ -8086,7 +8086,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   iconeRostoImage: {fileID: 585426922}
   spriteArmaRenderer: {fileID: 2077047198}
-  spriteArmaAnimator: {fileID: 0}
+  spriteArmaAnimator: {fileID: 8479120046140886122}
   textoMunicao: {fileID: 460757300}
 --- !u!4 &1317834208 stripped
 Transform:
@@ -14350,10 +14350,46 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 1431160935}
+    - target: {fileID: 3262355365674017039, guid: d9d96e63112886a48af50245d5467878, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.09
+      objectReference: {fileID: 0}
+    - target: {fileID: 3262355365674017039, guid: d9d96e63112886a48af50245d5467878, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.09
+      objectReference: {fileID: 0}
+    - target: {fileID: 3262355365674017039, guid: d9d96e63112886a48af50245d5467878, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3262355365674017039, guid: d9d96e63112886a48af50245d5467878, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.132
+      objectReference: {fileID: 0}
+    - target: {fileID: 3262355365674017039, guid: d9d96e63112886a48af50245d5467878, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.411
+      objectReference: {fileID: 0}
     - target: {fileID: 3643583395362276375, guid: d9d96e63112886a48af50245d5467878, type: 3}
       propertyPath: staminaSlider
       value: 
       objectReference: {fileID: 1217926698}
+    - target: {fileID: 4570295611208781696, guid: d9d96e63112886a48af50245d5467878, type: 3}
+      propertyPath: m_Size.x
+      value: 1.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 4570295611208781696, guid: d9d96e63112886a48af50245d5467878, type: 3}
+      propertyPath: m_Size.y
+      value: 2.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 4570295611208781696, guid: d9d96e63112886a48af50245d5467878, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 89f54fb69b5e5cd4c98e2a025629b3fa, type: 3}
+    - target: {fileID: 4570295611208781696, guid: d9d96e63112886a48af50245d5467878, type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4575800129912630672, guid: d9d96e63112886a48af50245d5467878, type: 3}
       propertyPath: hudManager
       value: 
@@ -14377,8 +14413,38 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8595896363322788041, guid: d9d96e63112886a48af50245d5467878, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8479120046140886122}
   m_SourcePrefab: {fileID: 100100000, guid: d9d96e63112886a48af50245d5467878, type: 3}
+--- !u!1 &8479120046140886121 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8595896363322788041, guid: d9d96e63112886a48af50245d5467878, type: 3}
+  m_PrefabInstance: {fileID: 8479120046140886120}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &8479120046140886122
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8479120046140886121}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 2da706c9949009a499edb758dc93ac51, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

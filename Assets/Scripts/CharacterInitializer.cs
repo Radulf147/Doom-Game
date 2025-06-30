@@ -12,7 +12,7 @@ public class CharacterInitializer : MonoBehaviour
 
     void Start()
 {
-    Debug.Log("--- INICIANDO DIAGNÓSTICO DO CHARACTERINITIALIZER ---");
+    Debug.Log("FASE 1 RECEBEU: O personagem que chegou do GameManager é: " + GameManager.Instance.personagemSelecionado.name);
 
     // Verificação 1: O GameManager existe?
     if (GameManager.Instance == null)
