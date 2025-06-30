@@ -15,10 +15,11 @@ MonoBehaviour:
   weaponAmmoType: 0
   danoDoProjetil: 15
   cadenciaDeTiro: 0.5
-  alcanceDaArma: 10
+  alcanceDaArma: 50
   projeteisPorTiro: 1
   fatorDeDispersao: 0
   tamanhoDoPente: 6
   municaoReservaMax: 60
   reloadTime: 1.5
   hitEffectPrefab: {fileID: 0}
+  animadorDaArma: {fileID: 0}
