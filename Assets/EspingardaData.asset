@@ -22,4 +22,4 @@ MonoBehaviour:
   municaoReservaMax: 60
   reloadTime: 1
   hitEffectPrefab: {fileID: 0}
-  animadorDaArma: {fileID: 0}
+  animadorDaArma: {fileID: 22100000, guid: 86ea788f4cf454a4ba1cdcadfda0eabb, type: 2}

@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: KatanaData
   m_EditorClassIdentifier: 
   weaponAmmoType: 0
-  projetilPrefab: {fileID: 0}
   danoDoProjetil: 1
   cadenciaDeTiro: 0.5
-  alcanceDoProjetil: 10
+  alcanceDaArma: 1000
   projeteisPorTiro: 1
   fatorDeDispersao: 0
   tamanhoDoPente: 6
   municaoReservaMax: 60
+  reloadTime: 1.5
+  hitEffectPrefab: {fileID: 0}
+  animadorDaArma: {fileID: 22100000, guid: aedba1cebf391a14888108330cb93ec9, type: 2}
