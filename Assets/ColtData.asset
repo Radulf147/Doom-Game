@@ -13,13 +13,19 @@ MonoBehaviour:
   m_Name: ColtData
   m_EditorClassIdentifier: 
   weaponAmmoType: 0
-  danoDoProjetil: 15
-  cadenciaDeTiro: 0.5
+  somDoTiro: {fileID: 8300000, guid: b64ab8afc75627d4995f3af97d052aa8, type: 3}
+  somDaRecarga: {fileID: 8300000, guid: 9250f8d6f762bef4d9a92521634e2a69, type: 3}
+  dano: 20
+  cadenciaDeTiro: 1.2
+  tempoDeRecarga: 4
   alcanceDaArma: 50
   projeteisPorTiro: 1
   fatorDeDispersao: 0
   tamanhoDoPente: 6
   municaoReservaMax: 60
-  reloadTime: 1.5
   hitEffectPrefab: {fileID: 0}
   animadorDaArma: {fileID: 22100000, guid: 19f5ae9128a5e7b4b88d2b26c6fcebc4, type: 2}
+  duracaoBaseAnimTiro: 1.667
+  duracaoVisualTiro: 1.2
+  duracaoBaseAnimRecarga: 1.5
+  duracaoVisualRecarga: 3

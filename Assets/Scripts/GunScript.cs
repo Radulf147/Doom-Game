@@ -13,8 +13,10 @@ public class GunScript : MonoBehaviour
     private int projeteisPorTiro;
     private float fatorDeDispersao;
     private float alcance;
-    private float reloadTime;
+    private float tempoDeRecarga;
     private GameObject hitEffectPrefab;
+    private AudioClip somDoTiro;
+    private AudioClip somDaRecarga;
 
     // Variáveis de estado
     private int municaoNoPente;
@@ -28,34 +30,50 @@ public class GunScript : MonoBehaviour
 
     private HUDManager hudManager;
     private Camera mainCamera;
+    private AudioSource audioSource;
 
     void Awake()
     {
         hudManager = FindFirstObjectByType<HUDManager>();
         mainCamera = Camera.main;
+        audioSource = GetComponent<AudioSource>();
     }
 
+    // Este método está correto e não precisa de alterações.
     public void CarregarDadosDaArma(WeaponData data)
     {
         this.weaponAmmoType = data.weaponAmmoType;
-        this.dano = data.danoDoProjetil;
+        this.dano = data.dano;
         this.cadencia = data.cadenciaDeTiro;
         this.tamanhoPente = data.tamanhoDoPente;
         this.municaoReservaMax = data.municaoReservaMax;
         this.alcance = data.alcanceDaArma;
         this.projeteisPorTiro = data.projeteisPorTiro;
         this.fatorDeDispersao = data.fatorDeDispersao;
-        this.reloadTime = data.reloadTime;
+        this.tempoDeRecarga = data.tempoDeRecarga;
         this.hitEffectPrefab = data.hitEffectPrefab;
 
-        // MODIFICAÇÃO 1: Passa o controlador de animação da ficha para a HUD.
+        this.somDoTiro = data.somDoTiro;
+        this.somDaRecarga = data.somDaRecarga;
+        
         if (hudManager != null)
         {
             hudManager.CarregarAnimadorDaArma(data.animadorDaArma);
+
+            if (data.duracaoVisualTiro > 0)
+            {
+                float velocidadeTiro = data.duracaoBaseAnimTiro / data.duracaoVisualTiro;
+                hudManager.DefinirVelocidadeAnimacao("VelocidadeTiro", velocidadeTiro);
+            }
+            if (data.duracaoVisualRecarga > 0)
+            {
+                float velocidadeRecarga = data.duracaoBaseAnimRecarga / data.duracaoVisualRecarga;
+                hudManager.DefinirVelocidadeAnimacao("VelocidadeRecarga", velocidadeRecarga);
+            }
         }
 
-        this.municaoNoPente = this.tamanhoPente;
-        this.municaoNaReserva = this.municaoReservaMax;
+        this.municaoNoPente = data.tamanhoDoPente;
+        this.municaoNaReserva = data.municaoReservaMax;
         AtualizarUI();
     }
 
@@ -68,35 +86,20 @@ public class GunScript : MonoBehaviour
     void Update()
     {
         if (isReloading) return;
-
-        if (Input.GetButton("Fire1") && Time.time >= proximoTiroDisponivel)
-        {
-            AttemptToFire();
-        }
-
-        if (Input.GetKeyDown(KeyCode.R) && municaoNoPente < tamanhoPente && municaoNaReserva > 0)
-        {
-            StartCoroutine(Reload());
-        }
+        if (Input.GetButton("Fire1") && Time.time >= proximoTiroDisponivel) AttemptToFire();
+        if (Input.GetKeyDown(KeyCode.R) && municaoNoPente < tamanhoPente && municaoNaReserva > 0) StartCoroutine(Reload());
     }
-
+    
     private void AttemptToFire()
     {
         if (municaoNoPente > 0)
         {
-            FireHitscan();
             proximoTiroDisponivel = Time.time + cadencia;
+            FireHitscan();
         }
-        else
+        else if (municaoNaReserva > 0)
         {
-            if (Time.time >= proximoTiroDisponivel)
-            {
-                proximoTiroDisponivel = Time.time + cadencia;
-                if (municaoNaReserva > 0)
-                {
-                    StartCoroutine(Reload());
-                }
-            }
+            StartCoroutine(Reload());
         }
     }
 
@@ -104,11 +107,15 @@ public class GunScript : MonoBehaviour
     {
         municaoNoPente--;
         AtualizarUI();
-        Debug.Log("GUNSCRIPT: Pedindo para o HUDManager tocar a animação de tiro...");
-        if (hudManager != null) hudManager.PlayAnimacaoTiro(); // Esta chamada já estava correta
 
+        if (audioSource != null && somDoTiro != null)
+        {
+            audioSource.PlayOneShot(somDoTiro);
+        }
+
+        if (hudManager != null) hudManager.PlayAnimacaoTiro();
+        
         Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-
         for (int i = 0; i < projeteisPorTiro; i++)
         {
             Vector3 direcaoDoTiro = ray.direction;
@@ -117,7 +124,6 @@ public class GunScript : MonoBehaviour
                 Vector2 circuloDispersao = Random.insideUnitCircle * fatorDeDispersao;
                 direcaoDoTiro += mainCamera.transform.up * circuloDispersao.y + mainCamera.transform.right * circuloDispersao.x;
             }
-
             RaycastHit hitInfo;
             if (Physics.Raycast(ray.origin, direcaoDoTiro, out hitInfo, alcance))
             {
@@ -125,12 +131,11 @@ public class GunScript : MonoBehaviour
             }
         }
     }
-
+    
     private void ProcessarImpacto(RaycastHit hitInfo, Vector3 direcaoDoTiro)
     {
         Vector3 hitPoint = hitInfo.point;
         Vector3 incomingHitDirection = -direcaoDoTiro.normalized;
-
         EnemyLimbDamageReceiver limbDamageReceiver = hitInfo.collider.GetComponent<EnemyLimbDamageReceiver>();
         if (limbDamageReceiver != null)
         {
@@ -144,7 +149,6 @@ public class GunScript : MonoBehaviour
                 damageableObject.TakeDamage(dano, hitPoint, incomingHitDirection, HitType.BodyShot);
             }
         }
-
         if (hitEffectPrefab != null)
         {
             Instantiate(hitEffectPrefab, hitPoint, Quaternion.LookRotation(hitInfo.normal));
@@ -156,10 +160,18 @@ public class GunScript : MonoBehaviour
         isReloading = true;
         Debug.Log("Recarregando...");
         
-        // MODIFICAÇÃO 2: Pede para a HUD tocar a animação de recarga.
-        if (hudManager != null) hudManager.PlayAnimacaoRecarga();
+        // CORREÇÃO 4: Lógica para tocar o som de recarga está de volta
+        if (audioSource != null && somDaRecarga != null)
+        {
+            audioSource.PlayOneShot(somDaRecarga);
+        }
 
-        yield return new WaitForSeconds(reloadTime);
+        if (hudManager != null) 
+        {
+            hudManager.PlayAnimacaoRecarga();
+        }
+        
+        yield return new WaitForSeconds(this.tempoDeRecarga);
 
         int ammoNeeded = tamanhoPente - municaoNoPente;
         int ammoToMove = Mathf.Min(ammoNeeded, municaoNaReserva);
@@ -169,7 +181,6 @@ public class GunScript : MonoBehaviour
         AtualizarUI();
         isReloading = false;
     }
-
     public void AddAmmo(int quantidade, AmmoPickup.AmmoType tipoDaMunicaoRecebida)
     {
         if (tipoDaMunicaoRecebida == this.weaponAmmoType)

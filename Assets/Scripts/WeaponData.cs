@@ -2,30 +2,42 @@ using UnityEngine;
 
 [CreateAssetMenu(fileName = "NovaArma", menuName = "Jogo/Ficha de Arma")]
 public class WeaponData : ScriptableObject
-{
-    [Header("Identificação")]
+{[Header("Identificação")]
     public AmmoPickup.AmmoType weaponAmmoType;
 
-    [Header("Configurações de Tiro")]
-    public float danoDoProjetil = 20f;
+    [Header("Sons da Arma")]
+    public AudioClip somDoTiro;
+    public AudioClip somDaRecarga;
+    [Header("Configurações de Gameplay")]
+    [Tooltip("Dano de cada projétil ou acerto.")]
+    public float dano = 20f;
+    [Tooltip("Tempo MÍNIMO em segundos entre cada tiro. Controla a LÓGICA.")]
     public float cadenciaDeTiro = 0.5f;
-    public float alcanceDaArma = 1000f;
+    [Tooltip("Tempo total em segundos que o jogador fica ESPERANDO a recarga. Controla a LÓGICA.")]
+    public float tempoDeRecarga = 2f;
+    [Tooltip("Alcance máximo da arma.")]
+    public float alcanceDaArma = 100f;
 
     [Header("Configurações de Espingarda")]
-    [Tooltip("Quantos raios (projéteis) são disparados por tiro. Use 1 para armas normais.")]
     public int projeteisPorTiro = 1;
-    [Tooltip("O fator de espalhamento dos tiros. Use 0 para precisão perfeita.")]
     public float fatorDeDispersao = 0f;
 
     [Header("Configurações de Munição")]
     public int tamanhoDoPente = 6;
     public int municaoReservaMax = 60;
-    public float reloadTime = 1.5f;
-
-    [Header("Efeitos Visuais de Impacto")]
+    
+    [Header("Efeitos e Animações")]
     public GameObject hitEffectPrefab;
-
-    [Header("Animações")]
-    // MODIFICAÇÃO: Este é o campo que guardará o conjunto de animações da arma.
     public AnimatorOverrideController animadorDaArma;
+    
+    [Header("Controle de Tempo Visual das Animações")]
+    [Tooltip("A duração original do seu clipe de animação de TIRO. (Selecione o .anim para ver)")]
+    public float duracaoBaseAnimTiro = 1f;
+    [Tooltip("Quanto tempo você QUER que a animação de tiro dure na tela.")]
+    public float duracaoVisualTiro = 0.2f; // <-- NOVO: Controle visual
+
+    [Tooltip("A duração original do seu clipe de animação de RECARGA. (Selecione o .anim para ver)")]
+    public float duracaoBaseAnimRecarga = 1f;
+    [Tooltip("Quanto tempo você QUER que a animação de recarga dure na tela.")]
+    public float duracaoVisualRecarga = 1.8f; // <-- NOVO: Controle visual
 }

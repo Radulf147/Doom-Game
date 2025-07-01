@@ -13,13 +13,19 @@ MonoBehaviour:
   m_Name: EspingardaData
   m_EditorClassIdentifier: 
   weaponAmmoType: 1
-  danoDoProjetil: 50
-  cadenciaDeTiro: 0.5
+  somDoTiro: {fileID: 8300000, guid: 917d6f6db3358b940ac9937538316100, type: 3}
+  somDaRecarga: {fileID: 8300000, guid: 4ddf3af1a0eb31d4d918062863cfd344, type: 3}
+  dano: 20
+  cadenciaDeTiro: 1.2
+  tempoDeRecarga: 2
   alcanceDaArma: 20
   projeteisPorTiro: 1
   fatorDeDispersao: 0
   tamanhoDoPente: 2
   municaoReservaMax: 60
-  reloadTime: 1
   hitEffectPrefab: {fileID: 0}
   animadorDaArma: {fileID: 22100000, guid: 86ea788f4cf454a4ba1cdcadfda0eabb, type: 2}
+  duracaoBaseAnimTiro: 0.583
+  duracaoVisualTiro: 2
+  duracaoBaseAnimRecarga: 0.333
+  duracaoVisualRecarga: 1.7
