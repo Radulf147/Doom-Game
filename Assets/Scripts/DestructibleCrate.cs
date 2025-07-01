@@ -1,18 +1,21 @@
 using UnityEngine;
 
-// A classe agora implementa a nova e única interface IDamageable
+// A classe continua implementando IDamageable
 public class DestructibleCrate : MonoBehaviour, IDamageable
 {
-    public enum LootType { None, Health, RevolverAmmo, ShotgunAmmo }
+    // --- ENUM MODIFICADO ---
+    // Agora temos apenas as opções de loot relevantes: Nada, Vida ou Munição.
+    public enum LootType { None, Health, Ammo }
 
     [Header("Loot Settings")]
     [Tooltip("Qual tipo de item esta caixa deve dropar ao ser destruída?")]
     public LootType lootType = LootType.None;
 
     [Header("Loot Prefabs")]
+    // --- VARIÁVEIS DE PREFAB MODIFICADAS ---
+    // Consolidamos para apenas um prefab de vida e um de munição.
     public GameObject healthDropPrefab;
-    public GameObject revolverAmmoDropPrefab;
-    public GameObject shotgunAmmoDropPrefab;
+    public GameObject ammoDropPrefab;
 
     [Header("Destruction Visuals")]
     [SerializeField] private GameObject destroyedCratePrefab;
@@ -24,13 +27,9 @@ public class DestructibleCrate : MonoBehaviour, IDamageable
 
     private bool isDestroyed = false;
 
-    // --- MÉTODO TakeDamage MODIFICADO PARA CORRESPONDER À INTERFACE ---
     public void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitDirection, HitType hitType = HitType.Unknown)
     {
         if (isDestroyed) return;
-
-        // A caixa destrói com qualquer quantidade de dano, então apenas chamamos DestroyCrate.
-        // O hitPoint pode ser usado para o efeito de explosão se desejado.
         DestroyCrate(hitPoint);
     }
 
@@ -42,7 +41,6 @@ public class DestructibleCrate : MonoBehaviour, IDamageable
         if (destroyedCratePrefab != null)
         {
             GameObject shatteredCrate = Instantiate(destroyedCratePrefab, transform.position, transform.rotation);
-            // Usa a origem da destruição para a força da explosão
             ApplyExplosionForceToPieces(shatteredCrate, destructionOrigin);
         }
 
@@ -62,31 +60,34 @@ public class DestructibleCrate : MonoBehaviour, IDamageable
     private void DropLoot()
     {
         GameObject prefabToDrop = null;
+
+        // --- SWITCH MODIFICADO ---
+        // A lógica agora usa os novos tipos de loot simplificados.
         switch (lootType)
         {
             case LootType.Health:
                 prefabToDrop = healthDropPrefab;
                 break;
-            case LootType.RevolverAmmo:
-                prefabToDrop = revolverAmmoDropPrefab;
-                break;
-            case LootType.ShotgunAmmo:
-                prefabToDrop = shotgunAmmoDropPrefab;
+            case LootType.Ammo: // Novo caso para a munição universal.
+                prefabToDrop = ammoDropPrefab;
                 break;
             case LootType.None:
-                return;
+                return; // Sai do método se não houver loot.
         }
 
         if (prefabToDrop != null)
         {
             Vector3 spawnPosition = new Vector3(transform.position.x, 0.348f, transform.position.z);
             Quaternion spawnRotation;
+
+            // A lógica de rotação especial para o kit médico continua a mesma.
             if (lootType == LootType.Health)
             {
                 spawnRotation = Quaternion.Euler(-89f, 0f, 0f);
             }
-            else
+            else // Isso agora se aplica à munição.
             {
+                // A munição usará a rotação padrão do seu prefab (geralmente em pé).
                 spawnRotation = Quaternion.identity;
             }
             Instantiate(prefabToDrop, spawnPosition, spawnRotation);

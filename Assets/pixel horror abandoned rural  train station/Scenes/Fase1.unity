@@ -1123,6 +1123,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b9a305e18de0c04dbd257a21cd47087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sharedProfile: {fileID: 0}
+  isGlobal: 0
+  blendDistance: 0
+  weight: 1
+  priority: 0
 --- !u!114 &110122521
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1135,6 +1140,54 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 948f4100a11a5c24981795d21301da5c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  volumeTrigger: {fileID: 0}
+  volumeLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  stopNaNPropagation: 1
+  finalBlitToCameraTarget: 0
+  antialiasingMode: 0
+  temporalAntialiasing:
+    jitterSpread: 0.75
+    sharpness: 0.25
+    stationaryBlending: 0.95
+    motionBlending: 0.85
+  subpixelMorphologicalAntialiasing:
+    quality: 2
+  fastApproximateAntialiasing:
+    fastMode: 0
+    keepAlpha: 0
+  fog:
+    enabled: 1
+    excludeSkybox: 1
+  debugLayer:
+    lightMeter:
+      width: 512
+      height: 256
+      showCurves: 1
+    histogram:
+      width: 512
+      height: 256
+      channel: 3
+    waveform:
+      exposure: 0.12
+      height: 256
+    vectorscope:
+      size: 256
+      exposure: 0.12
+    overlaySettings:
+      linearDepth: 0
+      motionColorIntensity: 4
+      motionGridSize: 64
+      colorBlindnessType: 0
+      colorBlindnessStrength: 1
+  m_Resources: {fileID: 0}
+  m_ShowToolkit: 0
+  m_ShowCustomSorter: 0
+  breakBeforeColorGrading: 0
+  m_BeforeTransparentBundles: []
+  m_BeforeStackBundles: []
+  m_AfterStackBundles: []
 --- !u!114 &110122522
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10291,14 +10344,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6acd947ac06cd544a744dfcb0ab1879, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lootType: 3
+  lootType: 2
   healthDropPrefab: {fileID: 5681662201888612616, guid: ad04a3f2bb2ab884fbde3647a51aa13b, type: 3}
-  revolverAmmoDropPrefab: {fileID: 0}
-  shotgunAmmoDropPrefab: {fileID: 9063641498765579896, guid: c77067b9781fabe4a8b0004bb84005df, type: 3}
+  ammoDropPrefab: {fileID: 6838392799529472000, guid: 135f5d59301215449bfef8eb22763649, type: 3}
   destroyedCratePrefab: {fileID: 2820236785397200279, guid: 4bf045e666a4aed4ea8a5b759f0fecba, type: 3}
   explosionForce: 10
   explosionRadius: 2
-  destroySound: {fileID: 0}
+  destroySound: {fileID: 8300000, guid: 2f360a95fa1735f40a8dba9a06664eba, type: 3}
 --- !u!54 &1680704686
 Rigidbody:
   m_ObjectHideFlags: 0
