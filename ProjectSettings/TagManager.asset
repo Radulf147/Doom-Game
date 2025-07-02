@@ -9,6 +9,7 @@ TagManager:
   - Trilho
   - TrainPrepared
   - TrainRepaired
+  - Train
   layers:
   - Default
   - TransparentFX

@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
-using TMPro; // ADICIONADO: Necessário para usar TextMeshPro
+using TMPro;
 
 public class FaseUmManager : MonoBehaviour
 {
@@ -10,6 +10,7 @@ public class FaseUmManager : MonoBehaviour
     public PlayerFPController playerController;
     public Camera cameraDoJogador;
     public Camera cameraDoTrem;
+    [Tooltip("O GameObject do trem. Deve ter o script 'TrainExitController' anexado e desativado.")]
     public GameObject trem;
     public AudioClip somDoTremChegando;
     [Tooltip("Tempo em segundos que a câmera ficará mostrando o trem antes de voltar ao jogador.")]
@@ -20,22 +21,18 @@ public class FaseUmManager : MonoBehaviour
     public Image painelDeFade;
     public float duracaoFade = 1.5f;
 
-    // ===== NOVO: CAMPO PARA A MENSAGEM FINAL =====
     [Header("Mensagem Final")]
     [Tooltip("O objeto de texto da UI que mostrará a mensagem final.")]
     public TextMeshProUGUI mensagemFinalText;
 
-
     private AudioSource audioSource;
     private bool cutsceneIniciada = false;
 
-    // Se inscreve para ouvir o anúncio do HordeManager
     private void OnEnable()
     {
         HordeManager.OnAllHordesCompleted += IniciarCutsceneFinal;
     }
 
-    // Se desinscreve para evitar erros
     private void OnDisable()
     {
         HordeManager.OnAllHordesCompleted -= IniciarCutsceneFinal;
@@ -43,16 +40,10 @@ public class FaseUmManager : MonoBehaviour
 
     void Start()
     {
-        // Prepara os objetos da cutscene
         if (trem != null) trem.SetActive(false);
         if (cameraDoTrem != null) cameraDoTrem.gameObject.SetActive(false);
         if (painelDeFade != null) painelDeFade.gameObject.SetActive(false);
-
-        // ===== NOVO: Garante que a mensagem final comece desligada =====
-        if (mensagemFinalText != null)
-        {
-            mensagemFinalText.gameObject.SetActive(false);
-        }
+        if (mensagemFinalText != null) mensagemFinalText.gameObject.SetActive(false);
 
         audioSource = gameObject.AddComponent<AudioSource>();
         if (audioSource == null) { audioSource = gameObject.AddComponent<AudioSource>(); }
@@ -103,11 +94,26 @@ public class FaseUmManager : MonoBehaviour
 
         yield return StartCoroutine(Fade(false));
 
-        // ===== NOVO: MOSTRAR A MENSAGEM FINAL =====
+        // --- PARTE 3: FINALIZAÇÃO E ATIVAÇÃO DA INTERAÇÃO ---
         if (mensagemFinalText != null)
         {
             mensagemFinalText.text = "O trem para o abrigo chegou";
             mensagemFinalText.gameObject.SetActive(true);
+        }
+
+        // ===== NOVO: ATIVA A INTERAÇÃO COM O TREM =====
+        if (trem != null)
+        {
+            TrainExitController trainInteractor = trem.GetComponent<TrainExitController>();
+            if (trainInteractor != null)
+            {
+                trainInteractor.enabled = true; // Ativa o script para permitir o embarque.
+                Debug.Log("Interação com o trem foi ativada.");
+            }
+            else
+            {
+                Debug.LogWarning("O objeto 'trem' não possui o script 'TrainExitController'. A interação não será possível.");
+            }
         }
 
         Debug.Log("Cutscene finalizada. O controle foi devolvido ao jogador.");

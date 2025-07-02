@@ -222,11 +222,11 @@ public class PlayerFPController : MonoBehaviour
 private bool HandleInteraction()
 {
     // Se o jogo está pausado ou o manager não existe, não faz nada.
-    if (PauseMenuController.isPaused || faseDoisManager == null)
-    {
-        if (interactionPromptText != null) interactionPromptText.gameObject.SetActive(false);
-        return false;
-    }
+    if (PauseMenuController.isPaused)
+        {
+            if (interactionPromptText != null) interactionPromptText.gameObject.SetActive(false);
+            return false;
+        }
 
     RaycastHit hit;
     // Atira um raio para frente para ver o que estamos olhando
@@ -251,7 +251,7 @@ private bool HandleInteraction()
                 // Se apertar E, viaja
                 if (Input.GetKeyDown(KeyCode.E))
                 {
-                    train.IrParaFaseTres();
+                    train.EmbarcarNoTrem();
                     return true;
                 }
                 return false; // Está olhando, mas não apertou E
