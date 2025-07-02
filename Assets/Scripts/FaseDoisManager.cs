@@ -97,12 +97,12 @@ public class FaseDoisManager : MonoBehaviour
 
             // --- PASSO 2: CONGELAMENTO (Com a tela preta) ---
             if (objetoParaDestruir != null) Destroy(objetoParaDestruir);
-            playerController.enabled = false;
+            playerController.canMove = false;
 
             // --- PASSO 3: TROCAR CÂMERAS ---
             cameraDoJogador.GetComponent<AudioListener>().enabled = false;
             cameraDoJogador.gameObject.tag = "Untagged";
-            cameraDoJogador.gameObject.SetActive(false);
+            cameraDoJogador.enabled = false;
 
             cameraDoTrem.gameObject.SetActive(true);
             cameraDoTrem.gameObject.tag = "MainCamera";
@@ -120,13 +120,13 @@ public class FaseDoisManager : MonoBehaviour
             cameraDoTrem.GetComponent<AudioListener>().enabled = false;
             cameraDoTrem.gameObject.tag = "Untagged";
             cameraDoTrem.gameObject.SetActive(false);
-            cameraDoJogador.gameObject.SetActive(true);
+            cameraDoJogador.enabled = true;
             cameraDoJogador.gameObject.tag = "MainCamera";
             cameraDoJogador.GetComponent<AudioListener>().enabled = true;
 
             // --- PASSO 7: LÓGICA FINAL DA UI E DESCONGELAMENTO ---
             // Primeiro, devolvemos o controlo ao jogador.
-            playerController.enabled = true;
+            playerController.canMove = true;
 
             // Agora, decidimos o que mostrar na tela.
             if (itensColetados >= 3)
