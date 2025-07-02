@@ -7,6 +7,8 @@ TagManager:
   - Fuel
   - Radiator
   - Trilho
+  - TrainPrepared
+  - TrainRepaired
   layers:
   - Default
   - TransparentFX

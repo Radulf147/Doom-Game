@@ -217,40 +217,75 @@ public class PlayerFPController : MonoBehaviour
         HandleInteraction();
     }
 
-    private bool HandleInteraction()
+    // Dentro do seu script PlayerFPController.cs
+
+private bool HandleInteraction()
+{
+    // Se o jogo está pausado ou o manager não existe, não faz nada.
+    if (PauseMenuController.isPaused || faseDoisManager == null)
     {
-        if (!canMove || faseDoisManager == null) 
-        {
-            if (interactionPromptText != null) interactionPromptText.gameObject.SetActive(false);
-            return false;
-        }
-
-        RaycastHit hit;
-        if (Physics.Raycast(playerCameraTransform.position, playerCameraTransform.forward, out hit, interactionDistance))
-        {
-            if (hit.collider.CompareTag("Trilho") || hit.collider.CompareTag("Fuel") || hit.collider.CompareTag("Radiator"))
-            {
-                if (interactionPromptText != null) interactionPromptText.gameObject.SetActive(true);
-
-                if (Input.GetKeyDown(KeyCode.E))
-                {
-                    if (interactionPromptText != null) interactionPromptText.gameObject.SetActive(false);
-
-                    // MUDANÇA AQUI: Em vez de passar a tag, passamos o GameObject inteiro.
-                    faseDoisManager.ColetarItem(hit.collider.gameObject);
-                    
-                    // MUDANÇA IMPORTANTE: A linha abaixo foi REMOVIDA daqui.
-                    // Destroy(hit.collider.gameObject); 
-                    
-                    return true; // Avisa que um item foi coletado para parar o movimento.
-                }
-                return false;
-            }
-        }
-        
         if (interactionPromptText != null) interactionPromptText.gameObject.SetActive(false);
         return false;
     }
+
+    RaycastHit hit;
+    // Atira um raio para frente para ver o que estamos olhando
+    if (Physics.Raycast(playerCameraTransform.position, playerCameraTransform.forward, out hit, interactionDistance))
+    {
+        // =======================================================
+        //  NOVA LÓGICA PARA VERIFICAR O TREM PRIMEIRO
+        // =======================================================
+        if (hit.collider.CompareTag("TrainRepaired"))
+        {
+            // Pega o script do trem para ver se ele está ATIVO
+            TrainExitController train = hit.collider.GetComponent<TrainExitController>();
+            if (train != null && train.enabled)
+            {
+                // Mostra o prompt "[E] para Viajar"
+                if (interactionPromptText != null)
+                {
+                    interactionPromptText.text = "Pressione [E] para Viajar";
+                    interactionPromptText.gameObject.SetActive(true);
+                }
+
+                // Se apertar E, viaja
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    train.IrParaFaseTres();
+                    return true;
+                }
+                return false; // Está olhando, mas não apertou E
+            }
+        }
+
+        // =======================================================
+        //  LÓGICA ANTIGA PARA ITENS (Continua funcionando)
+        // =======================================================
+        if (hit.collider.CompareTag("Trilho") || hit.collider.CompareTag("Fuel") || hit.collider.CompareTag("Radiator"))
+        {
+            if (interactionPromptText != null)
+            {
+                interactionPromptText.text = "Pressione [E] para Coletar";
+                interactionPromptText.gameObject.SetActive(true);
+            }
+
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                if (interactionPromptText != null) interactionPromptText.gameObject.SetActive(false);
+                faseDoisManager.ColetarItem(hit.collider.gameObject);
+                return true;
+            }
+            return false;
+        }
+    }
+
+    // Se o raio não acertou NADA interativo, esconde o prompt
+    if (interactionPromptText != null)
+    {
+        interactionPromptText.gameObject.SetActive(false);
+    }
+    return false;
+}
 
     void PlayFootstepSound()
     {

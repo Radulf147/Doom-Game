@@ -84,7 +84,7 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
         if (agent != null)
         {
             agent.enabled = true;
-            agent.isStopped = true;
+            // agent.isStopped = true;
             agent.avoidancePriority = UnityEngine.Random.Range(40, 60);
         }
     }

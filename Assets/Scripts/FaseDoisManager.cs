@@ -11,6 +11,8 @@ public class FaseDoisManager : MonoBehaviour
     public TextMeshProUGUI fuelText;
     public TextMeshProUGUI radiatorText;
 
+    public GameObject tremConsertado;
+
     [Header("Objetos do Cenário (Trilho)")]
     public GameObject trilhosQuebrados;
     public GameObject trilhoConsertado;
@@ -82,7 +84,7 @@ public class FaseDoisManager : MonoBehaviour
     IEnumerator ExecutarAnimacaoDoTrem(GameObject objetoParaDestruir)
     {
         animacaoEmAndamento = true;
-        
+
         try
         {
             // --- PASSO 1: PREPARAÇÃO VISUAL ---
@@ -95,17 +97,17 @@ public class FaseDoisManager : MonoBehaviour
 
             // --- PASSO 2: CONGELAMENTO (Com a tela preta) ---
             if (objetoParaDestruir != null) Destroy(objetoParaDestruir);
-            playerController.canMove = false;
-            
+            playerController.enabled = false;
+
             // --- PASSO 3: TROCAR CÂMERAS ---
             cameraDoJogador.GetComponent<AudioListener>().enabled = false;
-            cameraDoJogador.gameObject.tag = "Untagged"; 
-            cameraDoJogador.enabled = false;
-            
+            cameraDoJogador.gameObject.tag = "Untagged";
+            cameraDoJogador.gameObject.SetActive(false);
+
             cameraDoTrem.gameObject.SetActive(true);
             cameraDoTrem.gameObject.tag = "MainCamera";
             cameraDoTrem.GetComponent<AudioListener>().enabled = true;
-            
+
             // --- PASSO 4: EXIBIR A CENA ---
             if (somDeConserto != null) audioSource.PlayOneShot(somDeConserto);
             yield return StartCoroutine(Fade(false));
@@ -118,17 +120,18 @@ public class FaseDoisManager : MonoBehaviour
             cameraDoTrem.GetComponent<AudioListener>().enabled = false;
             cameraDoTrem.gameObject.tag = "Untagged";
             cameraDoTrem.gameObject.SetActive(false);
-            cameraDoJogador.enabled = true;
+            cameraDoJogador.gameObject.SetActive(true);
             cameraDoJogador.gameObject.tag = "MainCamera";
             cameraDoJogador.GetComponent<AudioListener>().enabled = true;
-            
+
             // --- PASSO 7: LÓGICA FINAL DA UI E DESCONGELAMENTO ---
             // Primeiro, devolvemos o controlo ao jogador.
-            playerController.canMove = true;
+            playerController.enabled = true;
 
             // Agora, decidimos o que mostrar na tela.
             if (itensColetados >= 3)
             {
+
                 // Jogo terminado: mostra a mensagem final. A UI do jogo continua desligada.
                 if (mensagemFinalText != null)
                 {
@@ -144,7 +147,7 @@ public class FaseDoisManager : MonoBehaviour
                 {
                     listItens.gameObject.SetActive(false);
                 }
-   
+
             }
             else
             {
@@ -154,13 +157,18 @@ public class FaseDoisManager : MonoBehaviour
                     if (obj != null) obj.SetActive(true);
                 }
             }
-            
+
             // Finalmente, clareia a tela, já com a UI correta visível e o jogador no controlo.
             yield return StartCoroutine(Fade(false));
         }
         finally
         {
             animacaoEmAndamento = false;
+        }
+        TrainExitController trainInteractor = tremConsertado.GetComponent<TrainExitController>();
+        if (trainInteractor != null)
+        {
+        trainInteractor.enabled = true; // Ativa o script!
         }
     }
 

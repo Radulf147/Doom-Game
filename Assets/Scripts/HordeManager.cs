@@ -17,6 +17,8 @@ public class HordeManager : MonoBehaviour
     [Header("Configuração das Hordas")]
     public Wave[] waves;
 
+    public static event System.Action OnAllHordesCompleted;
+    
     [Header("Referências")]
     // --- CORREÇÃO AQUI: A variável 'spawnPoints' foi declarada novamente ---
     public Transform[] spawnPoints;
@@ -54,6 +56,7 @@ public class HordeManager : MonoBehaviour
         if (currentWaveIndex >= waves.Length)
         {
             UpdateWaveUI("Todas as hordas concluídas!");
+            OnAllHordesCompleted?.Invoke();
             this.enabled = false;
             return;
         }
