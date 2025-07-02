@@ -61,6 +61,8 @@ public class CharacterInitializer : MonoBehaviour
             // A LINHA 41 (APROXIMADAMENTE) ESTÁ AQUI.
             // Se o erro acontece aqui, é porque algo DENTRO de CarregarDadosDaArma está nulo.
             gunScript.CarregarDadosDaArma(personagem.dadosDaArma);
+            // Informa à arma sobre as habilidades do personagem
+            gunScript.SetCharacterAbilities(personagem);
         }
         else
         {

@@ -192,9 +192,9 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
     }
 
     // Este método é chamado pelo EnemyLimbDamageReceiver ou por um ataque corpo a corpo do jogador
-    public void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitDirection, HitType hitType = HitType.Unknown)
-    {
-        if (isDead) return;
+    public bool TakeDamage(float amount, Vector3 hitPoint, Vector3 hitDirection, HitType hitType)
+{
+    if (isDead) return false;
 
         currentHealth -= amount;
         lastHitType = hitType; // Armazena o tipo do último acerto que causou dano
@@ -208,9 +208,12 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
 
         if (currentHealth <= 0)
         {
-            currentHealth = 0;
-            Die();
+        currentHealth = 0;
+        Die();
+        return true; // Retorna true porque o inimigo morreu
         }
+
+        return false; // Retorna false porque o inimigo sobreviveu
     }
 
     void Die()

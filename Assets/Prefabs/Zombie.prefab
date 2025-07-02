@@ -2559,7 +2559,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b621a1a9e2ea03b44a76eea59aa8f6d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyNavigationManager: {fileID: 3598719544384792689}
+  mainHealthController: {fileID: 3598719544384792689}
   damageMultiplier: 1
   limbHitType: 2
 --- !u!1 &7013939346216449797
@@ -2883,7 +2883,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b621a1a9e2ea03b44a76eea59aa8f6d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyNavigationManager: {fileID: 3598719544384792689}
+  mainHealthController: {fileID: 3598719544384792689}
   damageMultiplier: 10
   limbHitType: 1
 --- !u!1 &7279166250328305552

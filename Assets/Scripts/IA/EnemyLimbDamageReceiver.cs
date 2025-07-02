@@ -1,30 +1,22 @@
-// EnemyLimbDamageReceiver.cs
 using UnityEngine;
 
 public class EnemyLimbDamageReceiver : MonoBehaviour
 {
-    public EnemyNavigation enemyNavigationManager;
-    [Tooltip("Multiplicador de dano para esta parte do corpo (ex: 2.0 para headshot, 0.5 para perna)")]
-    public float damageMultiplier = 1f;
-    [Tooltip("Tipo de acerto que este membro representa (Headshot, BodyShot)")]
-    public HitType limbHitType = HitType.BodyShot; // Defina como BodyShot por padrão
+    public EnemyNavigation mainHealthController;
+    public float damageMultiplier = 2.0f;
+    public HitType limbHitType = HitType.Headshot;
 
-    void Awake()
+    // --- CORREÇÃO AQUI: O método agora retorna um 'bool' ---
+    public bool ReceiveHit(float baseDamage, Vector3 hitPoint, Vector3 hitDirection)
     {
-        if (enemyNavigationManager == null)
+        if (mainHealthController != null)
         {
-            enemyNavigationManager = GetComponentInParent<EnemyNavigation>();
-            if (enemyNavigationManager == null)
-            {
-                Debug.LogError("EnemyNavigation não encontrado no pai do " + gameObject.name + ". Certifique-se de que o script está no GameObject principal do inimigo ou em um de seus pais.", this);
-            }
+            float finalDamage = baseDamage * damageMultiplier;
+            // Retorna o resultado da chamada TakeDamage do controlador principal
+            return mainHealthController.TakeDamage(finalDamage, hitPoint, hitDirection, limbHitType);
         }
-    }
-
-    public void ReceiveHit(float baseDamage, Vector3 hitPoint, Vector3 hitDirection)
-    {
-        if (enemyNavigationManager == null) return;
-        float finalDamage = baseDamage * damageMultiplier;
-        enemyNavigationManager.TakeDamage(finalDamage, hitPoint, hitDirection, limbHitType);
+        
+        Debug.LogError("O Controlador de Vida Principal não foi atribuído no LimbReceiver de " + gameObject.name);
+        return false; // Retorna false se não houver controlador de vida
     }
 }

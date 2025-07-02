@@ -1,33 +1,52 @@
 using UnityEngine;
-using UnityEngine.UI; // Necessário para UI
+using UnityEngine.UI;
+using TMPro;
 
 public class PlayerHealth : MonoBehaviour
 {
+    [Header("Configurações de Vida")]
     public float maxHealth = 100f;
     public float currentHealth;
 
-    // MODIFICADO: Mudamos o tipo da variável de 'Image' para 'Slider'
+    [Header("Configurações de Shield")]
+    public float maxShield = 50f;
+    public float currentShield;
+
+    [Header("Referências da UI")]
     public Slider healthBar;
+    public Slider shieldBar;
+    public TextMeshProUGUI shieldText;
 
     void Start()
     {
         currentHealth = maxHealth;
-        // Configura o valor máximo do slider no início
-        if (healthBar != null)
-        {
-            healthBar.maxValue = maxHealth;
-        }
-        Debug.Log("UM NOVO JOGADOR ACABA DE 'NASCER' NA CENA!");
+        currentShield = 0; 
+        
+        if (healthBar != null) healthBar.maxValue = maxHealth;
+        if (shieldBar != null) shieldBar.maxValue = maxShield;
+        
         UpdateHealthBar();
+        UpdateShieldBar();
     }
 
     public void TakeDamage(float amount)
     {
-        currentHealth -= amount;
-        currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
+        if (currentShield > 0)
+        {
+            float damageToShield = Mathf.Min(amount, currentShield);
+            currentShield -= damageToShield;
+            amount -= damageToShield;
+        }
 
-        Debug.Log(transform.name + " (Player) tomou " + amount + " de dano. Vida atual: " + currentHealth);
+        if (amount > 0)
+        {
+            currentHealth -= amount;
+        }
+
+        currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
+        
         UpdateHealthBar();
+        UpdateShieldBar();
 
         if (currentHealth <= 0)
         {
@@ -35,55 +54,51 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
+    public void AddShield(float amount)
+    {
+        currentShield += amount;
+        currentShield = Mathf.Min(currentShield, maxShield);
+        UpdateShieldBar();
+    }
+
+    public void Heal(float amount)
+    {
+        currentHealth += amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
+        UpdateHealthBar();
+    }
+
     void UpdateHealthBar()
     {
-        // MODIFICADO: Agora usamos 'healthBar.value' para atualizar o slider
         if (healthBar != null)
         {
             healthBar.value = currentHealth;
         }
     }
-
-    /// <summary>
-    /// Restaura uma quantidade de vida para o jogador.
-    /// </summary>
-    /// <param name="amount">A quantidade de vida a ser restaurada.</param>
-    public void Heal(float amount)
+    
+    void UpdateShieldBar()
     {
-        currentHealth += amount;
-        // Mathf.Clamp garante que a vida não ultrapasse o valor máximo.
-        currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
-
-        Debug.Log(transform.name + " (Player) se curou em " + amount + ". Vida atual: " + currentHealth);
-        UpdateHealthBar(); // Atualiza a UI da barra de vida.
+        if (shieldBar != null)
+        {
+            shieldBar.value = currentShield;
+            shieldBar.gameObject.SetActive(currentShield > 0);
+        }
+        if (shieldText != null)
+        {
+            shieldText.text = currentShield.ToString("F0"); 
+            shieldText.gameObject.SetActive(currentShield > 0);
+        }
     }
 
     void Die()
     {
-        Debug.Log("Jogador morreu! Agora estou tentando encontrar o GameManager...");
-
-        // Tenta encontrar o GameManager na cena
-        GameManager gm = FindAnyObjectByType<GameManager>();
-
-        // Verifica se o GameManager foi encontrado
-        if (gm != null)
+        Debug.Log("Player morreu!");
+        
+        // --- CORREÇÃO AQUI ---
+        // Chamando o método com o nome correto que está no seu GameManager
+        if (GameManager.Instance != null)
         {
-            // Se encontrou, chama a função e avisa no console que deu certo
-            Debug.Log("GameManager ENCONTRADO! Chamando a tela de Game Over...");
-            gm.ChamarGameOver();
+            GameManager.Instance.ChamarGameOver();
         }
-        else
-        {
-            // Se NÃO encontrou, nos avisa com uma mensagem de erro vermelha!
-            Debug.LogError("ERRO CRÍTICO: Não foi possível encontrar o objeto GameManager na cena! Verifique se ele existe na Hierarchy e se o script está anexado.");
-        }
-
-        // O resto do seu código para desativar os scripts do jogador fica aqui...
-        // Exemplo:
-        // PlayerFPController moveScript = GetComponent<PlayerFPController>();
-        // if (moveScript != null)
-        // {
-        //     moveScript.enabled = false;
-        // }
     }
 }

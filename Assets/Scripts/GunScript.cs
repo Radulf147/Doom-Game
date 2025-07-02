@@ -23,6 +23,8 @@ public class GunScript : MonoBehaviour
     private float duracaoVisualRecarga;
     private float duracaoBaseAnimRecarga;
 
+    private bool characterHasMultiKillAbility = false;
+
     // --- Variáveis de estado ---
     private int municaoNoPente;
     private int municaoNaReserva;
@@ -82,40 +84,22 @@ public class GunScript : MonoBehaviour
         AtualizarUI();
     }
 
-    // --- MÉTODO ProcessarImpacto CORRIGIDO ---
-    // A lógica de dano agora volta a diferenciar entre um membro (headshot) e o corpo.
-    private void ProcessarImpacto(RaycastHit hitInfo, Vector3 direcaoDoTiro)
+    public void SetCharacterAbilities(CharacterData charData)
     {
-        // Efeito de partícula de impacto sempre acontece.
-        if (hitEffectPrefab != null)
-        {
-            Instantiate(hitEffectPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
-        }
-
-        // PRIMEIRO, tenta encontrar um receptor de dano no membro específico que foi atingido.
-        EnemyLimbDamageReceiver limbReceiver = hitInfo.collider.GetComponent<EnemyLimbDamageReceiver>();
-
-        if (limbReceiver != null)
-        {
-            // Se encontrou, o membro sabe como lidar com o dano (aplicar multiplicadores, etc.).
-            // A direção do dano é o oposto da direção do tiro.
-            limbReceiver.ReceiveHit(dano, hitInfo.point, -direcaoDoTiro.normalized);
-        }
-        else
-        {
-            // SE NÃO encontrou um receptor no membro, volta para a lógica antiga de procurar
-            // um IDamageable geral no objeto (para o corpo do zumbi ou para caixas).
-            IDamageable damageableObject = hitInfo.collider.GetComponentInParent<IDamageable>();
-            if (damageableObject != null)
-            {
-                // Passa o tipo de acerto como "BodyShot" por padrão se não for um membro específico.
-                damageableObject.TakeDamage(dano, hitInfo.point, -direcaoDoTiro.normalized, HitType.BodyShot);
-            }
-        }
+        this.characterHasMultiKillAbility = charData.hasMultiKillShieldAbility;
     }
 
-    // O resto do script (Update, FireHitscan, Reload, etc.) permanece o mesmo.
-    // Incluído abaixo para que você possa copiar e colar tudo de uma vez.
+    // --- MÉTODO AddAmmo CORRIGIDO ---
+    // Ele não precisa mais saber o tipo ou a quantidade, pois esses dados agora estão na própria arma.
+    public void AddAmmo()
+    {
+        municaoNaReserva += this.municaoPorColeta;
+        municaoNaReserva = Mathf.Min(municaoNaReserva, municaoReservaMax);
+        AtualizarUI();
+        Debug.Log("Pegou " + this.municaoPorColeta + " de munição. Reserva atual: " + municaoNaReserva);
+    }
+
+    // O resto do script permanece o mesmo
     #region Métodos Inalterados
     void OnEnable()
     {
@@ -144,11 +128,10 @@ public class GunScript : MonoBehaviour
     {
         municaoNoPente--;
         AtualizarUI();
-
         if (audioSource != null && somDoTiro != null) audioSource.PlayOneShot(somDoTiro);
         if (hudManager != null) hudManager.PlayAnimacaoTiro();
-        
         Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        int killsThisShot = 0;
         for (int i = 0; i < projeteisPorTiro; i++)
         {
             Vector3 direcaoDoTiro = ray.direction;
@@ -160,14 +143,46 @@ public class GunScript : MonoBehaviour
             RaycastHit hitInfo;
             if (Physics.Raycast(ray.origin, direcaoDoTiro, out hitInfo, alcance))
             {
-                ProcessarImpacto(hitInfo, direcaoDoTiro);
+                bool targetDied = ProcessarImpacto(hitInfo, direcaoDoTiro);
+                if (targetDied)
+                {
+                    killsThisShot++;
+                }
             }
         }
+        if (characterHasMultiKillAbility && killsThisShot > 1)
+        {
+            PlayerHealth playerHealth = GetComponentInParent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.AddShield(10);
+            }
+        }
+    }
+    private bool ProcessarImpacto(RaycastHit hitInfo, Vector3 direcaoDoTiro)
+    {
+        if (hitEffectPrefab != null)
+        {
+            Instantiate(hitEffectPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
+        }
+        EnemyLimbDamageReceiver limbReceiver = hitInfo.collider.GetComponent<EnemyLimbDamageReceiver>();
+        if (limbReceiver != null)
+        {
+            return limbReceiver.ReceiveHit(dano, hitInfo.point, -direcaoDoTiro.normalized);
+        }
+        else
+        {
+            IDamageable damageableObject = hitInfo.collider.GetComponentInParent<IDamageable>();
+            if (damageableObject != null)
+            {
+                return damageableObject.TakeDamage(dano, hitInfo.point, -direcaoDoTiro.normalized, HitType.BodyShot);
+            }
+        }
+        return false;
     }
     IEnumerator Reload()
     {
         isReloading = true;
-        Debug.Log("Recarregando...");
         if (audioSource != null && somDaRecarga != null) audioSource.PlayOneShot(somDaRecarga);
         if (hudManager != null) hudManager.PlayAnimacaoRecarga();
         yield return new WaitForSeconds(this.tempoDeRecarga);
@@ -177,12 +192,6 @@ public class GunScript : MonoBehaviour
         municaoNaReserva -= ammoToMove;
         AtualizarUI();
         isReloading = false;
-    }
-    public void AddAmmo()
-    {
-        municaoNaReserva += this.municaoPorColeta;
-        municaoNaReserva = Mathf.Min(municaoNaReserva, municaoReservaMax);
-        AtualizarUI();
     }
     private void AtualizarUI()
     {
