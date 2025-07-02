@@ -27,7 +27,7 @@ public class PlayerFPController : MonoBehaviour
     public float sprintStepInterval = 0.35f;
     public float walkPitch = 1.0f;
     public float sprintPitch = 1.3f;
-    
+
     private AudioSource footstepAudioSource;
     private float stepTimer = 0f;
     private float _currentAppliedSpeed = 0f;
@@ -37,7 +37,7 @@ public class PlayerFPController : MonoBehaviour
 
     [HideInInspector]
     public bool canMove = true;
-    
+
     // --- ADICIONADO PARA O SISTEMA DE ESTAMINA ---
     private StaminaController staminaController; // Referência ao controlador de estamina
     private float speedModifier = 1.0f; // Multiplicador para a velocidade (1f = 100% da velocidade)
@@ -46,8 +46,8 @@ public class PlayerFPController : MonoBehaviour
     void Start()
     {
         characterController = GetComponent<CharacterController>();
-        
-        footstepAudioSource = GetComponent<AudioSource>(); 
+
+        footstepAudioSource = GetComponent<AudioSource>();
         if (footstepAudioSource == null)
         {
             Debug.LogWarning("PlayerFPController: Nenhum AudioSource principal encontrado para passos. Adicionando um novo e configurando para 3D...");
@@ -55,7 +55,7 @@ public class PlayerFPController : MonoBehaviour
         }
         footstepAudioSource.playOnAwake = false;
         footstepAudioSource.loop = false;
-        footstepAudioSource.spatialBlend = 1.0f; 
+        footstepAudioSource.spatialBlend = 1.0f;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -73,7 +73,7 @@ public class PlayerFPController : MonoBehaviour
                 Debug.LogError("PlayerFPController: 'playerCameraTransform' não foi atribuído no Inspector e nenhuma câmera filha foi encontrada! A rotação vertical do mouse não funcionará corretamente. Por favor, atribua a câmera filha.");
             }
         }
-        
+
         // --- ADICIONADO PARA O SISTEMA DE ESTAMINA ---
         // Pega a referência ao StaminaController no mesmo GameObject
         staminaController = GetComponent<StaminaController>();
@@ -81,8 +81,7 @@ public class PlayerFPController : MonoBehaviour
         {
             Debug.LogError("PlayerFPController: StaminaController não encontrado no jogador! O sistema de estamina não funcionará.", this);
         }
-        // --- FIM DA ADIÇÃO ---
-    }
+    } 
 
     void Update()
     {
@@ -172,8 +171,8 @@ public class PlayerFPController : MonoBehaviour
 
         characterController.Move(finalMove * Time.deltaTime);
 
-        // --- Lógica da Visão do Mouse ---
-        if (canMove && playerCameraTransform != null) 
+        // A nova condição verifica se o jogo NÃO está pausado
+        if (canMove && playerCameraTransform != null && PauseMenuController.isPaused == false) 
         {
             rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
             rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
