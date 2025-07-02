@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nomeDoPersonagem: Michonne
   iconeRostoHUD: {fileID: 21300000, guid: e1f1d3e5aea61574b9a4155a45104253, type: 3}
-  spriteArma2D: {fileID: 21300000, guid: 4b38f2775378d3a4489a7b543b3ce6e7, type: 3}
+  spriteArma2D: {fileID: 21300000, guid: 76f20267b40c8ee4e8fd30b0c12773e9, type: 3}
   velocidadeMovimento: 7
   taxaDeAtaque: 3
   regeneraVida: 1

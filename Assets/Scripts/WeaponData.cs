@@ -1,10 +1,15 @@
 using UnityEngine;
 
+
 [CreateAssetMenu(fileName = "NovaArma", menuName = "Jogo/Ficha de Arma")]
 public class WeaponData : ScriptableObject
 {
-    // O campo 'weaponAmmoType' foi removido para unificar a munição.
+    public enum TipoDeArma { Fogo, Branca } // Branca = Melee
 
+    [Header("Tipo da Arma")]
+    public TipoDeArma tipoDeArma = TipoDeArma.Fogo;
+
+    // --- O RESTO DO SEU CÓDIGO CONTINUA IGUAL ---
     [Header("Sons da Arma")]
     public AudioClip somDoTiro;
     public AudioClip somDaRecarga;

@@ -77,45 +77,16 @@ public class GunScript : MonoBehaviour
             }
         }
 
+        // >>>>> A CORREÇÃO ESTÁ AQUI <<<<<
         this.municaoNoPente = data.tamanhoDoPente;
-        this.municaoNaReserva = 0;
+        this.municaoNaReserva = data.municaoReservaMax; // Agora lê o valor máximo da reserva da ficha.
         AtualizarUI();
     }
 
-    // --- MÉTODO ProcessarImpacto CORRIGIDO ---
-    // A lógica de dano agora volta a diferenciar entre um membro (headshot) e o corpo.
-    private void ProcessarImpacto(RaycastHit hitInfo, Vector3 direcaoDoTiro)
-    {
-        // Efeito de partícula de impacto sempre acontece.
-        if (hitEffectPrefab != null)
-        {
-            Instantiate(hitEffectPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
-        }
+    // --- O RESTO DO SEU CÓDIGO PERMANECE IGUAL ---
+    // Cole o resto dos seus métodos (OnEnable, Update, FireHitscan, Reload, etc.) aqui.
+    // Eles já estão corretos e não precisam de alteração.
 
-        // PRIMEIRO, tenta encontrar um receptor de dano no membro específico que foi atingido.
-        EnemyLimbDamageReceiver limbReceiver = hitInfo.collider.GetComponent<EnemyLimbDamageReceiver>();
-
-        if (limbReceiver != null)
-        {
-            // Se encontrou, o membro sabe como lidar com o dano (aplicar multiplicadores, etc.).
-            // A direção do dano é o oposto da direção do tiro.
-            limbReceiver.ReceiveHit(dano, hitInfo.point, -direcaoDoTiro.normalized);
-        }
-        else
-        {
-            // SE NÃO encontrou um receptor no membro, volta para a lógica antiga de procurar
-            // um IDamageable geral no objeto (para o corpo do zumbi ou para caixas).
-            IDamageable damageableObject = hitInfo.collider.GetComponentInParent<IDamageable>();
-            if (damageableObject != null)
-            {
-                // Passa o tipo de acerto como "BodyShot" por padrão se não for um membro específico.
-                damageableObject.TakeDamage(dano, hitInfo.point, -direcaoDoTiro.normalized, HitType.BodyShot);
-            }
-        }
-    }
-
-    // O resto do script (Update, FireHitscan, Reload, etc.) permanece o mesmo.
-    // Incluído abaixo para que você possa copiar e colar tudo de uma vez.
     #region Métodos Inalterados
     void OnEnable()
     {
@@ -164,6 +135,29 @@ public class GunScript : MonoBehaviour
             }
         }
     }
+
+    private void ProcessarImpacto(RaycastHit hitInfo, Vector3 direcaoDoTiro)
+    {
+        if (hitEffectPrefab != null)
+        {
+            Instantiate(hitEffectPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
+        }
+
+        EnemyLimbDamageReceiver limbReceiver = hitInfo.collider.GetComponent<EnemyLimbDamageReceiver>();
+        if (limbReceiver != null)
+        {
+            limbReceiver.ReceiveHit(dano, hitInfo.point, -direcaoDoTiro.normalized);
+        }
+        else
+        {
+            IDamageable damageableObject = hitInfo.collider.GetComponentInParent<IDamageable>();
+            if (damageableObject != null)
+            {
+                damageableObject.TakeDamage(dano, hitInfo.point, -direcaoDoTiro.normalized, HitType.BodyShot);
+            }
+        }
+    }
+
     IEnumerator Reload()
     {
         isReloading = true;
