@@ -96,7 +96,7 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
     }
     void Update()
     {
-        if (isDead || player == null || agent == null || !agent.enabled) return;
+        if (isDead || player == null || agent == null || !agent.enabled || !agent.isOnNavMesh) return;
         HandleDetectionAndChase();
         HandleAttacking();
         if (animator != null)

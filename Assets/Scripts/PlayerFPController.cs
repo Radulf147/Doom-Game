@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerFPController : MonoBehaviour
@@ -28,6 +29,14 @@ public class PlayerFPController : MonoBehaviour
     public float walkPitch = 1.0f;
     public float sprintPitch = 1.3f;
 
+    // --- NOVO CABEÇALHO PARA O SISTEMA DE COLETA ---
+    [Header("Interaction Settings")]
+    public float interactionDistance = 3.0f; // Distância máxima para poder pegar um item
+    public TextMeshProUGUI interactionPromptText; // O texto "Pressione E para pegar"
+    public FaseDoisManager faseDoisManager; // Referência ao nosso gerenciador de fase
+    // --- FIM DAS NOVAS VARIÁVEIS ---
+
+
     private AudioSource footstepAudioSource;
     private float stepTimer = 0f;
     private float _currentAppliedSpeed = 0f;
@@ -42,6 +51,18 @@ public class PlayerFPController : MonoBehaviour
     private StaminaController staminaController; // Referência ao controlador de estamina
     private float speedModifier = 1.0f; // Multiplicador para a velocidade (1f = 100% da velocidade)
     // --- FIM DAS ADIÇÕES ---
+
+    void OnEnable()
+    {
+        // Zera a velocidade vertical para impedir quedas ou pulos fantasmas.
+        _verticalVelocity = 0f;
+
+        if (characterController != null)
+        {
+            characterController.Move(Vector3.zero);
+        }
+    }
+
 
     void Start()
     {
@@ -81,6 +102,13 @@ public class PlayerFPController : MonoBehaviour
         {
             Debug.LogError("PlayerFPController: StaminaController não encontrado no jogador! O sistema de estamina não funcionará.", this);
         }
+
+        // Garante que o texto de interação comece desligado
+        if (interactionPromptText != null)
+        {
+            interactionPromptText.gameObject.SetActive(false);
+        }
+
     } 
 
     void Update()
@@ -185,6 +213,43 @@ public class PlayerFPController : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
+
+        HandleInteraction();
+    }
+
+    private bool HandleInteraction()
+    {
+        if (!canMove || faseDoisManager == null) 
+        {
+            if (interactionPromptText != null) interactionPromptText.gameObject.SetActive(false);
+            return false;
+        }
+
+        RaycastHit hit;
+        if (Physics.Raycast(playerCameraTransform.position, playerCameraTransform.forward, out hit, interactionDistance))
+        {
+            if (hit.collider.CompareTag("Trilho") || hit.collider.CompareTag("Fuel") || hit.collider.CompareTag("Radiator"))
+            {
+                if (interactionPromptText != null) interactionPromptText.gameObject.SetActive(true);
+
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    if (interactionPromptText != null) interactionPromptText.gameObject.SetActive(false);
+
+                    // MUDANÇA AQUI: Em vez de passar a tag, passamos o GameObject inteiro.
+                    faseDoisManager.ColetarItem(hit.collider.gameObject);
+                    
+                    // MUDANÇA IMPORTANTE: A linha abaixo foi REMOVIDA daqui.
+                    // Destroy(hit.collider.gameObject); 
+                    
+                    return true; // Avisa que um item foi coletado para parar o movimento.
+                }
+                return false;
+            }
+        }
+        
+        if (interactionPromptText != null) interactionPromptText.gameObject.SetActive(false);
+        return false;
     }
 
     void PlayFootstepSound()

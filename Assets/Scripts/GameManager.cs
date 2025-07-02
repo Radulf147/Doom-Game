@@ -99,7 +99,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("FUNÇÃO TENTAR NOVAMENTE FOI CHAMADA!"); // <-- ADICIONE ESSA LINHA
         Time.timeScale = 1f; // Despausa o jogo
         // CORREÇÃO PRINCIPAL: Sempre carrega a "Fase1"
-        SceneManager.LoadScene("Fase1");
+        SceneManager.LoadScene("Fase 2");
     }
 
     public void VoltarAoMenu()
