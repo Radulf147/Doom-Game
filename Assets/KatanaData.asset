@@ -13,19 +13,20 @@ MonoBehaviour:
   m_Name: KatanaData
   m_EditorClassIdentifier: 
   tipoDeArma: 1
-  somDoTiro: {fileID: 8300000, guid: b64ab8afc75627d4995f3af97d052aa8, type: 3}
-  somDaRecarga: {fileID: 8300000, guid: 9250f8d6f762bef4d9a92521634e2a69, type: 3}
   dano: 20
   cadenciaDeTiro: 0.5
   tempoDeRecarga: 2
-  alcanceDaArma: 1000
-  projeteisPorTiro: 1
+  alcanceDaArma: 3.5
+  projeteisPorTiro: 3
   fatorDeDispersao: 0
-  tamanhoDoPente: 6
-  municaoReservaMax: 60
+  espacamentoVertical: 0.2
+  tamanhoDoPente: 99999
+  municaoReservaMax: 99999
   municaoPorColeta: 12
   hitEffectPrefab: {fileID: 0}
   animadorDaArma: {fileID: 22100000, guid: aedba1cebf391a14888108330cb93ec9, type: 2}
+  somDoTiro: {fileID: 8300000, guid: 6273f34811010da4e83a67811e21ae84, type: 3}
+  somDaRecarga: {fileID: 8300000, guid: 9250f8d6f762bef4d9a92521634e2a69, type: 3}
   duracaoBaseAnimTiro: 1
   duracaoVisualTiro: 0.2
   duracaoBaseAnimRecarga: 1
