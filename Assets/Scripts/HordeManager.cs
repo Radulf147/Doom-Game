@@ -14,15 +14,23 @@ public class Wave
 
 public class HordeManager : MonoBehaviour
 {
-    [Header("Configuração das Hordas")]
+    [Header("ConfiguraÃ§Ã£o das Hordas")]
     public Wave[] waves;
 
-    [Header("Referências")]
+    [Header("ReferÃªncias")]
+    // --- CORREÃ‡ÃƒO AQUI: A variÃ¡vel 'spawnPoints' foi declarada novamente ---
     public Transform[] spawnPoints;
     public TextMeshProUGUI waveTextUI;
+    public AudioClip hordeAnnouncementSound;
+    private AudioSource audioSource;
 
     private int currentWaveIndex = -1;
     private List<EnemyNavigation> activeZombies = new List<EnemyNavigation>();
+
+    void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
 
     void OnEnable()
     {
@@ -43,50 +51,50 @@ public class HordeManager : MonoBehaviour
     {
         currentWaveIndex++;
 
-        // --- DIAGNÓSTICO 3 ---
-        Debug.Log("StartNextWave foi chamado. Tentando iniciar a horda de índice: " + currentWaveIndex);
-
         if (currentWaveIndex >= waves.Length)
         {
-            UpdateWaveUI("Todas as hordas concluídas!");
-            Debug.Log("Parabéns! Você sobreviveu a todas as hordas.");
-            this.enabled = false; // Desabilita o manager
+            UpdateWaveUI("Todas as hordas concluÃ­das!");
+            this.enabled = false;
             return;
         }
-
-        StartCoroutine(WaveCoroutine());
+        
+        StartCoroutine(WaveAnnouncementCoroutine());
     }
 
-    IEnumerator WaveCoroutine()
+    IEnumerator WaveAnnouncementCoroutine()
     {
         Wave currentWave = waves[currentWaveIndex];
+        string waveNumberText = GetWaveNumberAsText(currentWaveIndex + 1);
+        UpdateWaveUI($"A {waveNumberText} horda estÃ¡ vindo...");
 
-        // --- DIAGNÓSTICO 4 ---
-        Debug.Log("Corrotina para '" + currentWave.waveName + "' iniciada. Esperando " + currentWave.timeBeforeThisWave + " segundos.");
+        if (hordeAnnouncementSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(hordeAnnouncementSound);
+        }
 
-        UpdateWaveUI("Próxima horda em " + currentWave.timeBeforeThisWave + "s...");
+        yield return new WaitForSeconds(8f);
 
-        yield return new WaitForSeconds(currentWave.timeBeforeThisWave);
-
-        UpdateWaveUI(currentWave.waveName);
+        UpdateWaveUI("");
         SpawnWave(currentWave);
     }
 
+    // --- MÃ‰TODO SpawnWave CORRIGIDO ---
     void SpawnWave(Wave wave)
     {
         Debug.Log("SPAWN WAVE: Criando " + wave.zombieCount + " zumbis.");
         activeZombies.Clear();
 
-        if (spawnPoints.Length == 0)
+        // A verificaÃ§Ã£o agora Ã© feita uma vez, antes do loop, e usa 'return'
+        if (spawnPoints == null || spawnPoints.Length == 0)
         {
-            Debug.LogError("ERRO DE SPAWN: Nenhum ponto de spawn foi atribuído no HordeManager!");
-            return;
+            Debug.LogError("ERRO DE SPAWN: Nenhum ponto de spawn foi atribuÃ­do no HordeManager!");
+            return; // 'return' Ã© o comando correto para sair de um mÃ©todo 'void'
         }
 
         for (int i = 0; i < wave.zombieCount; i++)
         {
             Transform randomSpawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
-
+            
             GameObject zombieInstance = Instantiate(wave.zombiePrefab, randomSpawnPoint.position, randomSpawnPoint.rotation);
             EnemyNavigation enemyScript = zombieInstance.GetComponent<EnemyNavigation>();
 
@@ -95,27 +103,17 @@ public class HordeManager : MonoBehaviour
                 activeZombies.Add(enemyScript);
             }
         }
-        Debug.Log("SPAWN WAVE: " + activeZombies.Count + " zumbis adicionados à lista de ativos.");
     }
 
     void HandleEnemyDied(EnemyNavigation deadEnemy)
     {
-        // --- DIAGNÓSTICO 1 ---
-        // Este log deve aparecer CADA VEZ que um zumbi morre.
-        Debug.Log("HandleEnemyDied foi chamado pelo zumbi: " + deadEnemy.name);
-
         if (activeZombies.Contains(deadEnemy))
         {
             activeZombies.Remove(deadEnemy);
-
-            // --- DIAGNÓSTICO 2 ---
-            // Este log nos diz se a contagem de zumbis está diminuindo corretamente.
-            Debug.Log("Zumbi removido da lista. Zumbis restantes na horda: " + activeZombies.Count);
         }
 
         if (activeZombies.Count == 0 && currentWaveIndex < waves.Length)
         {
-            Debug.Log("CONDIÇÃO ATINGIDA: Todos os zumbis da horda foram derrotados! Chamando StartNextWave...");
             StartNextWave();
         }
     }
@@ -125,6 +123,17 @@ public class HordeManager : MonoBehaviour
         if (waveTextUI != null)
         {
             waveTextUI.text = message;
+        }
+    }
+    
+    private string GetWaveNumberAsText(int number)
+    {
+        switch (number)
+        {
+            case 1: return "primeira";
+            case 2: return "segunda";
+            case 3: return "terceira";
+            default: return number.ToString() + "Âª";
         }
     }
 }

@@ -79,31 +79,57 @@ public class GunScript : MonoBehaviour
             }
         }
 
-        // >>>>> A CORREÇÃO ESTÁ AQUI <<<<<
+        // --- CORREÇÃO IMPORTANTE ---
+        // Vamos garantir que a arma comece com a reserva de munição definida na ficha.
         this.municaoNoPente = data.tamanhoDoPente;
-        this.municaoNaReserva = data.municaoReservaMax; // Agora lê o valor máximo da reserva da ficha.
+        this.municaoNaReserva = data.municaoReservaMax;
         AtualizarUI();
+    }
+    
+    // --- MÉTODO ProcessarImpacto MODIFICADO PARA INCLUIR O SCOREMANAGER ---
+    private bool ProcessarImpacto(RaycastHit hitInfo, Vector3 direcaoDoTiro)
+    {
+        if (hitEffectPrefab != null)
+        {
+            Instantiate(hitEffectPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
+        }
+
+        EnemyLimbDamageReceiver limbReceiver = hitInfo.collider.GetComponent<EnemyLimbDamageReceiver>();
+        if (limbReceiver != null)
+        {
+            bool morreu = limbReceiver.ReceiveHit(dano, hitInfo.point, -direcaoDoTiro.normalized);
+            if (morreu && ScoreManager.Instance != null)
+            {
+                // Pede para o ScoreManager adicionar pontos baseado no tipo de membro atingido
+                ScoreManager.Instance.AddScoreForEnemyKill(limbReceiver.limbHitType);
+            }
+            return morreu;
+        }
+        else
+        {
+            IDamageable damageableObject = hitInfo.collider.GetComponentInParent<IDamageable>();
+            if (damageableObject != null)
+            {
+                bool morreu = damageableObject.TakeDamage(dano, hitInfo.point, -direcaoDoTiro.normalized, HitType.BodyShot);
+                if (morreu && ScoreManager.Instance != null)
+                {
+                    // Se não foi um membro específico, conta como BodyShot
+                    ScoreManager.Instance.AddScoreForEnemyKill(HitType.BodyShot);
+                }
+                return morreu;
+            }
+        }
+        return false;
     }
 
 
+    #region Métodos Inalterados
+    // O resto do seu código (Update, FireHitscan, Reload, etc.) permanece o mesmo.
+    // Incluído abaixo para que você possa copiar e colar tudo de uma vez.
     public void SetCharacterAbilities(CharacterData charData)
     {
         this.characterHasMultiKillAbility = charData.hasMultiKillShieldAbility;
     }
-
-    // --- MÉTODO AddAmmo CORRIGIDO ---
-    // Ele não precisa mais saber o tipo ou a quantidade, pois esses dados agora estão na própria arma.
-    public void AddAmmo()
-    {
-        municaoNaReserva += this.municaoPorColeta;
-        municaoNaReserva = Mathf.Min(municaoNaReserva, municaoReservaMax);
-        AtualizarUI();
-        Debug.Log("Pegou " + this.municaoPorColeta + " de munição. Reserva atual: " + municaoNaReserva);
-    }
-
-    // O resto do script permanece o mesmo
-
-    #region Métodos Inalterados
     void OnEnable()
     {
         isReloading = false;
@@ -162,29 +188,6 @@ public class GunScript : MonoBehaviour
             }
         }
     }
-    private bool ProcessarImpacto(RaycastHit hitInfo, Vector3 direcaoDoTiro)
-    {
-        if (hitEffectPrefab != null)
-        {
-            Instantiate(hitEffectPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
-        }
-        EnemyLimbDamageReceiver limbReceiver = hitInfo.collider.GetComponent<EnemyLimbDamageReceiver>();
-        if (limbReceiver != null)
-        {
-            return limbReceiver.ReceiveHit(dano, hitInfo.point, -direcaoDoTiro.normalized);
-        }
-        else
-        {
-            IDamageable damageableObject = hitInfo.collider.GetComponentInParent<IDamageable>();
-            if (damageableObject != null)
-            {
-                return damageableObject.TakeDamage(dano, hitInfo.point, -direcaoDoTiro.normalized, HitType.BodyShot);
-            }
-        }
-        return false;
-    }
-
-
     IEnumerator Reload()
     {
         isReloading = true;
@@ -197,6 +200,12 @@ public class GunScript : MonoBehaviour
         municaoNaReserva -= ammoToMove;
         AtualizarUI();
         isReloading = false;
+    }
+    public void AddAmmo()
+    {
+        municaoNaReserva += this.municaoPorColeta;
+        municaoNaReserva = Mathf.Min(municaoNaReserva, municaoReservaMax);
+        AtualizarUI();
     }
     private void AtualizarUI()
     {
