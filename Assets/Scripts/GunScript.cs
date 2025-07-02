@@ -4,7 +4,7 @@ using TMPro;
 
 public class GunScript : MonoBehaviour
 {
-    // --- Atributos da Arma (Carregados pela Ficha de Dados) ---
+    // --- Atributos da Arma ---
     private float dano;
     private float cadencia;
     private int tamanhoPente;
@@ -22,7 +22,7 @@ public class GunScript : MonoBehaviour
     private float duracaoBaseAnimTiro;
     private float duracaoVisualRecarga;
     private float duracaoBaseAnimRecarga;
-
+    private float espacamentoVertical; // <-- Nova variável interna
     private bool characterHasMultiKillAbility = false;
 
     // --- Variáveis de estado ---
@@ -31,7 +31,7 @@ public class GunScript : MonoBehaviour
     private float proximoTiroDisponivel = 0f;
     private bool isReloading = false;
 
-    [Header("Referências da Cena (Arrastar no Inspector)")]
+    [Header("Referências da Cena")]
     public Transform pontoDeDisparo;
     public TextMeshProUGUI textoMunicao;
 
@@ -55,6 +55,7 @@ public class GunScript : MonoBehaviour
         this.alcance = data.alcanceDaArma;
         this.projeteisPorTiro = data.projeteisPorTiro;
         this.fatorDeDispersao = data.fatorDeDispersao;
+        this.espacamentoVertical = data.espacamentoVertical; // <-- Carrega o novo dado
         this.tempoDeRecarga = data.tempoDeRecarga;
         this.hitEffectPrefab = data.hitEffectPrefab;
         this.municaoPorColeta = data.municaoPorColeta;
@@ -69,24 +70,65 @@ public class GunScript : MonoBehaviour
         if (hudManager != null)
         {
             hudManager.CarregarAnimadorDaArma(this.animadorDaArma);
-            if (this.duracaoVisualTiro > 0)
-            {
-                hudManager.DefinirVelocidadeAnimacao("VelocidadeTiro", this.duracaoBaseAnimTiro / this.duracaoVisualTiro);
-            }
-            if (this.duracaoVisualRecarga > 0)
-            {
-                hudManager.DefinirVelocidadeAnimacao("VelocidadeRecarga", this.duracaoBaseAnimRecarga / this.duracaoVisualRecarga);
-            }
+            if (this.duracaoVisualTiro > 0) hudManager.DefinirVelocidadeAnimacao("VelocidadeTiro", this.duracaoBaseAnimTiro / this.duracaoVisualTiro);
+            if (this.duracaoVisualRecarga > 0) hudManager.DefinirVelocidadeAnimacao("VelocidadeRecarga", this.duracaoBaseAnimRecarga / this.duracaoVisualRecarga);
         }
 
-        // --- CORREÇÃO IMPORTANTE ---
-        // Vamos garantir que a arma comece com a reserva de munição definida na ficha.
         this.municaoNoPente = data.tamanhoDoPente;
         this.municaoNaReserva = data.municaoReservaMax;
         AtualizarUI();
     }
     
-    // --- MÉTODO ProcessarImpacto MODIFICADO PARA INCLUIR O SCOREMANAGER ---
+    // MÉTODO FireHitscan ATUALIZADO
+    private void FireHitscan()
+    {
+        municaoNoPente--;
+        AtualizarUI();
+
+        if (audioSource != null && somDoTiro != null) audioSource.PlayOneShot(somDoTiro);
+        if (hudManager != null) hudManager.PlayAnimacaoTiro();
+        
+        Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        int killsThisShot = 0;
+
+        for (int i = 0; i < projeteisPorTiro; i++)
+        {
+            Vector3 direcaoDoTiro = ray.direction;
+
+            // --- LÓGICA DE DISPERSÃO ATUALIZADA ---
+            if (fatorDeDispersao > 0) // Lógica para a espingarda (dispersão aleatória)
+            {
+                Vector2 circuloDispersao = Random.insideUnitCircle * fatorDeDispersao;
+                direcaoDoTiro += mainCamera.transform.up * circuloDispersao.y + mainCamera.transform.right * circuloDispersao.x;
+            }
+            else if (espacamentoVertical > 0) // NOVA LÓGICA para a Katana (dispersão vertical)
+            {
+                float centroDoArco = (projeteisPorTiro - 1) / 2.0f;
+                float offsetVertical = (i - centroDoArco) * espacamentoVertical;
+                direcaoDoTiro += mainCamera.transform.up * offsetVertical;
+            }
+            
+            RaycastHit hitInfo;
+            if (Physics.Raycast(ray.origin, direcaoDoTiro, out hitInfo, alcance))
+            {
+                bool targetDied = ProcessarImpacto(hitInfo, direcaoDoTiro);
+                if(targetDied)
+                {
+                    killsThisShot++;
+                }
+            }
+        }
+
+        if (characterHasMultiKillAbility && killsThisShot > 1)
+        {
+            PlayerHealth playerHealth = GetComponentInParent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.AddShield(10);
+            }
+        }
+    }
+
     private bool ProcessarImpacto(RaycastHit hitInfo, Vector3 direcaoDoTiro)
     {
         if (hitEffectPrefab != null)
@@ -100,7 +142,6 @@ public class GunScript : MonoBehaviour
             bool morreu = limbReceiver.ReceiveHit(dano, hitInfo.point, -direcaoDoTiro.normalized);
             if (morreu && ScoreManager.Instance != null)
             {
-                // Pede para o ScoreManager adicionar pontos baseado no tipo de membro atingido
                 ScoreManager.Instance.AddScoreForEnemyKill(limbReceiver.limbHitType);
             }
             return morreu;
@@ -113,7 +154,6 @@ public class GunScript : MonoBehaviour
                 bool morreu = damageableObject.TakeDamage(dano, hitInfo.point, -direcaoDoTiro.normalized, HitType.BodyShot);
                 if (morreu && ScoreManager.Instance != null)
                 {
-                    // Se não foi um membro específico, conta como BodyShot
                     ScoreManager.Instance.AddScoreForEnemyKill(HitType.BodyShot);
                 }
                 return morreu;
@@ -122,10 +162,6 @@ public class GunScript : MonoBehaviour
         return false;
     }
 
-
-    #region Métodos Inalterados
-    // O resto do seu código (Update, FireHitscan, Reload, etc.) permanece o mesmo.
-    // Incluído abaixo para que você possa copiar e colar tudo de uma vez.
     public void SetCharacterAbilities(CharacterData charData)
     {
         this.characterHasMultiKillAbility = charData.hasMultiKillShieldAbility;
@@ -151,41 +187,6 @@ public class GunScript : MonoBehaviour
         else if (municaoNaReserva > 0)
         {
             StartCoroutine(Reload());
-        }
-    }
-    private void FireHitscan()
-    {
-        municaoNoPente--;
-        AtualizarUI();
-        if (audioSource != null && somDoTiro != null) audioSource.PlayOneShot(somDoTiro);
-        if (hudManager != null) hudManager.PlayAnimacaoTiro();
-        Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-        int killsThisShot = 0;
-        for (int i = 0; i < projeteisPorTiro; i++)
-        {
-            Vector3 direcaoDoTiro = ray.direction;
-            if (fatorDeDispersao > 0)
-            {
-                Vector2 circuloDispersao = Random.insideUnitCircle * fatorDeDispersao;
-                direcaoDoTiro += mainCamera.transform.up * circuloDispersao.y + mainCamera.transform.right * circuloDispersao.x;
-            }
-            RaycastHit hitInfo;
-            if (Physics.Raycast(ray.origin, direcaoDoTiro, out hitInfo, alcance))
-            {
-                bool targetDied = ProcessarImpacto(hitInfo, direcaoDoTiro);
-                if (targetDied)
-                {
-                    killsThisShot++;
-                }
-            }
-        }
-        if (characterHasMultiKillAbility && killsThisShot > 1)
-        {
-            PlayerHealth playerHealth = GetComponentInParent<PlayerHealth>();
-            if (playerHealth != null)
-            {
-                playerHealth.AddShield(10);
-            }
         }
     }
     IEnumerator Reload()
@@ -214,5 +215,4 @@ public class GunScript : MonoBehaviour
             textoMunicao.text = municaoNoPente + " / " + municaoNaReserva;
         }
     }
-    #endregion
 }

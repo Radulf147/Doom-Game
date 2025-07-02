@@ -2,9 +2,9 @@ using UnityEngine;
 
 public class CharacterInitializer : MonoBehaviour
 {
+    // A referência ao MeleeScript foi removida.
     [Header("Referências aos Sistemas de Combate")]
     public GunScript gunScript;
-    public MeleeScript meleeScript;
 
     private HUDManager hudManager;
 
@@ -28,40 +28,21 @@ public class CharacterInitializer : MonoBehaviour
             hudManager.ConfigurarHUD(personagem.iconeRostoHUD, personagem.spriteArma2D);
         }
         
-        if (personagem.dadosDaArma != null)
+        // LÓGICA FINAL E SIMPLIFICADA
+        if (personagem.dadosDaArma != null && gunScript != null)
         {
-
-
-            // --- LÓGICA DE DECISÃO CORRIGIDA ---
-            if (personagem.dadosDaArma.tipoDeArma == WeaponData.TipoDeArma.Fogo) // Adicionado "WeaponData."
-            {
-                // Se for arma de fogo, ativa o GunScript e desativa o MeleeScript
-                gunScript.enabled = true;
-                meleeScript.enabled = false;
-                gunScript.CarregarDadosDaArma(personagem.dadosDaArma);
-            }
-            else if (personagem.dadosDaArma.tipoDeArma == WeaponData.TipoDeArma.Branca) // Adicionado "WeaponData."
-            {
-                // Se for arma branca, ativa o MeleeScript e desativa o GunScript
-                gunScript.enabled = false;
-                meleeScript.enabled = true;
-                meleeScript.CarregarDadosDaArma(personagem.dadosDaArma);
-            }
-
-            gunScript.SetCharacterAbilities(personagem);
+            // Se o personagem tem uma arma (qualquer uma), ativamos o GunScript.
+            gunScript.enabled = true;
+            gunScript.CarregarDadosDaArma(personagem.dadosDaArma);
+            // gunScript.SetCharacterAbilities(personagem); // Se você ainda usa passivas
         }
-        else
+        else if (gunScript != null)
         {
-            // Se não tiver arma nenhuma, desativa os dois
+            // Se não tiver arma nenhuma, desativa o GunScript.
             gunScript.enabled = false;
-            meleeScript.enabled = false;
         }
 
-        // --- Lógica das Passivas ---
-        // Exemplo:
-        // if (personagem.regeneraVida)
-        // {
-        //     GetComponent<PlayerHealth>().StartRegeneration();
-        // }
+        // Se você tiver passivas que não dependem da arma, pode aplicá-las aqui.
+        // Ex: GetComponent<PlayerHealth>().maxHealth = personagem.vidaMaxima;
     }
 }
