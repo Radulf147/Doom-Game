@@ -18,4 +18,5 @@ MonoBehaviour:
   velocidadeMovimento: 5
   taxaDeAtaque: 1
   regeneraVida: 1
+  hasMultiKillShieldAbility: 1
   dadosDaArma: {fileID: 11400000, guid: 8105415680e1a7a4abb6693832d708e1, type: 2}

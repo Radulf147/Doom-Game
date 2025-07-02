@@ -79,10 +79,12 @@ public class GunScript : MonoBehaviour
             }
         }
 
+        // >>>>> A CORREÇÃO ESTÁ AQUI <<<<<
         this.municaoNoPente = data.tamanhoDoPente;
-        this.municaoNaReserva = 0;
+        this.municaoNaReserva = data.municaoReservaMax; // Agora lê o valor máximo da reserva da ficha.
         AtualizarUI();
     }
+
 
     public void SetCharacterAbilities(CharacterData charData)
     {
@@ -100,6 +102,7 @@ public class GunScript : MonoBehaviour
     }
 
     // O resto do script permanece o mesmo
+
     #region Métodos Inalterados
     void OnEnable()
     {
@@ -180,6 +183,8 @@ public class GunScript : MonoBehaviour
         }
         return false;
     }
+
+
     IEnumerator Reload()
     {
         isReloading = true;

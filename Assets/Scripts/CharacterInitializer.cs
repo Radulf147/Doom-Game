@@ -2,78 +2,66 @@ using UnityEngine;
 
 public class CharacterInitializer : MonoBehaviour
 {
-    [Header("Referências do Jogador")]
-    public HUDManager hudManager; // Arraste seu Canvas aqui
-    public GunScript gunScript;   // Ele já está no mesmo objeto
-    
-    // A referência ao SpriteRenderer da arma não é mais necessária aqui,
-    // pois o HUDManager já a possui. Mas podemos manter para outras lógicas se precisar.
-    // public SpriteRenderer spriteArmaRenderer; 
+    [Header("Referências aos Sistemas de Combate")]
+    public GunScript gunScript;
+    public MeleeScript meleeScript;
+
+    private HUDManager hudManager;
+
+    void Awake()
+    {
+        hudManager = FindFirstObjectByType<HUDManager>();
+    }
 
     void Start()
-{
-    Debug.Log("FASE 1 RECEBEU: O personagem que chegou do GameManager é: " + GameManager.Instance.personagemSelecionado.name);
-
-    // Verificação 1: O GameManager existe?
-    if (GameManager.Instance == null)
     {
-        Debug.LogError("DIAGNÓSTICO FALHOU: A instância do GameManager é NULA. Verifique se o objeto _GameManager com o script está na cena de seleção.");
-        return;
-    }
-    Debug.Log("DIAGNÓSTICO: GameManager.Instance - OK.");
+        if (GameManager.Instance == null || GameManager.Instance.personagemSelecionado == null)
+        {
+            Debug.LogError("Nenhum personagem selecionado! Carregue a cena de seleção.");
+            return;
+        }
 
-    // Verificação 2: Um personagem foi selecionado?
-    if (GameManager.Instance.personagemSelecionado == null)
-    {
-        Debug.LogError("DIAGNÓSTICO FALHOU: Nenhum personagem foi selecionado (personagemSelecionado é NULO). Verifique o script CharacterSelection.");
-        return;
-    }
-    Debug.Log("DIAGNÓSTICO: Personagem Selecionado ('" + GameManager.Instance.personagemSelecionado.name + "') - OK.");
-
-    CharacterData personagem = GameManager.Instance.personagemSelecionado;
-
-    // Verificação 3: A referência ao HUDManager foi arrastada no Inspector?
-    Debug.Log("VERIFICANDO: hudManager - " + (hudManager == null ? "ESTÁ NULO! (PROBLEMA AQUI)" : "OK."));
-
-    // Verificação 4: A referência ao GunScript foi arrastada no Inspector?
-    Debug.Log("VERIFICANDO: gunScript - " + (gunScript == null ? "ESTÁ NULO! (PROBLEMA AQUI)" : "OK."));
-
-    // --- A partir daqui, o código tenta executar a lógica original ---
-    Debug.Log("--- FIM DO DIAGNÓSTICO. TENTANDO EXECUTAR A LÓGICA... ---");
-
-
-    // Lógica original (agora com verificações)
-    if (hudManager != null)
-    {
-        hudManager.ConfigurarHUD(personagem.iconeRostoHUD, personagem.spriteArma2D);
-    }
-    else
-    {
-        // Se o hudManager for nulo, este erro apareceria antes da linha 41.
-        Debug.LogError("Erro Crítico: Referência ao HUDManager está faltando no Inspector do CharacterInitializer.");
-        return; // Para a execução para evitar mais erros.
-    }
-
-    if (gunScript != null)
-    {
+        CharacterData personagem = GameManager.Instance.personagemSelecionado;
+        
+        if (hudManager != null)
+        {
+            hudManager.ConfigurarHUD(personagem.iconeRostoHUD, personagem.spriteArma2D);
+        }
+        
         if (personagem.dadosDaArma != null)
         {
-            // A LINHA 41 (APROXIMADAMENTE) ESTÁ AQUI.
-            // Se o erro acontece aqui, é porque algo DENTRO de CarregarDadosDaArma está nulo.
-            gunScript.CarregarDadosDaArma(personagem.dadosDaArma);
-            // Informa à arma sobre as habilidades do personagem
+
+
+            // --- LÓGICA DE DECISÃO CORRIGIDA ---
+            if (personagem.dadosDaArma.tipoDeArma == WeaponData.TipoDeArma.Fogo) // Adicionado "WeaponData."
+            {
+                // Se for arma de fogo, ativa o GunScript e desativa o MeleeScript
+                gunScript.enabled = true;
+                meleeScript.enabled = false;
+                gunScript.CarregarDadosDaArma(personagem.dadosDaArma);
+            }
+            else if (personagem.dadosDaArma.tipoDeArma == WeaponData.TipoDeArma.Branca) // Adicionado "WeaponData."
+            {
+                // Se for arma branca, ativa o MeleeScript e desativa o GunScript
+                gunScript.enabled = false;
+                meleeScript.enabled = true;
+                meleeScript.CarregarDadosDaArma(personagem.dadosDaArma);
+            }
+
             gunScript.SetCharacterAbilities(personagem);
         }
         else
         {
+            // Se não tiver arma nenhuma, desativa os dois
             gunScript.enabled = false;
+            meleeScript.enabled = false;
         }
+
+        // --- Lógica das Passivas ---
+        // Exemplo:
+        // if (personagem.regeneraVida)
+        // {
+        //     GetComponent<PlayerHealth>().StartRegeneration();
+        // }
     }
-    else
-    {
-        // Se o gunScript for nulo, este será o erro real.
-        Debug.LogError("Erro Crítico: Referência ao GunScript está faltando no Inspector do CharacterInitializer.");
-        return;
-    }
-}
 }

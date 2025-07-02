@@ -7,5 +7,9 @@ AnimatorOverrideController:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Override_katana
-  m_Controller: {fileID: 0}
-  m_Clips: []
+  m_Controller: {fileID: 9100000, guid: 2da706c9949009a499edb758dc93ac51, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: b07e89628f391ac42b70baab6f4141eb, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: b07e89628f391ac42b70baab6f4141eb, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: d7201aba9cd10bf4080ab42014d1307f, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: d7201aba9cd10bf4080ab42014d1307f, type: 2}
