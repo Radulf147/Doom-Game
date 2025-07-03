@@ -78,7 +78,18 @@ public class FaseTresManager : MonoBehaviour
 
         foreach (GameObject obj in uiParaEsconder)
         {
-            if (obj != null) obj.SetActive(false);
+                // Garante que o objeto não é nulo antes de continuar
+            if (obj != null)
+            {
+                // VERIFICAÇÃO ADICIONADA:
+                // Se o objeto NÃO tiver um componente de Câmera, desative-o.
+                if (obj.GetComponent<Camera>() == null)
+                {
+                    obj.SetActive(false);
+                }
+                // Se tiver um componente de Câmera, esta condição será falsa
+                // e o código dentro do 'if' será ignorado, deixando a câmera ativa.
+            }
         }
 
         if (painelDeFade != null)

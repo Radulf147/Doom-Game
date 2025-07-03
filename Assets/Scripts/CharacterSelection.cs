@@ -15,7 +15,8 @@ public class CharacterSelection : MonoBehaviour
 
         // Carrega a cena do jogo
 
-        SceneManager.LoadScene("Fase 3");
+        SceneManager.LoadScene("fase1");
+
     }
 
     // Estas são as funções que os botões vão chamar
