@@ -148,6 +148,12 @@ public class FaseDoisManager : MonoBehaviour
                     listItens.gameObject.SetActive(false);
                 }
 
+                TrainExitController trainInteractor = tremConsertado.GetComponent<TrainExitController>();
+                if (trainInteractor != null)
+                {
+                trainInteractor.enabled = true; // Ativa o script!
+                }
+
             }
             else
             {
@@ -165,11 +171,7 @@ public class FaseDoisManager : MonoBehaviour
         {
             animacaoEmAndamento = false;
         }
-        TrainExitController trainInteractor = tremConsertado.GetComponent<TrainExitController>();
-        if (trainInteractor != null)
-        {
-        trainInteractor.enabled = true; // Ativa o script!
-        }
+
     }
 
     IEnumerator Fade(bool paraPreto)
