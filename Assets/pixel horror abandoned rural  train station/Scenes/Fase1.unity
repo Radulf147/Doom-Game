@@ -5504,7 +5504,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &646914210
 RectTransform:
   m_ObjectHideFlags: 0
@@ -18890,10 +18890,78 @@ PrefabInstance:
       propertyPath: m_Name
       value: SistemaDePause
       objectReference: {fileID: 0}
+    - target: {fileID: 3314458081539696958, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3486314429431202858, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3486314429431202858, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3486314429431202858, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3486314429431202858, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -205.66
+      objectReference: {fileID: 0}
+    - target: {fileID: 4861941553529830340, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 72264d4d00e4d9a4a92ad9728778fb61, type: 3}
+    - target: {fileID: 5595484890878637776, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_Colors.m_HighlightedColor.b
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5595484890878637776, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_Colors.m_HighlightedColor.g
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5595484890878637776, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_Colors.m_HighlightedColor.r
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5781854145411521270, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 472f4a3d84f6baf499ee71fcce290922, type: 3}
+    - target: {fileID: 5806326831154847819, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6592852670169026825, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6803421786874642358, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
       propertyPath: playerController
       value: 
       objectReference: {fileID: 647470115}
+    - target: {fileID: 7875776413336005948, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8710464083192155333, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8874197277825279209, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_Colors.m_HighlightedColor.b
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8874197277825279209, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_Colors.m_HighlightedColor.g
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8874197277825279209, guid: e864b37064d576547ad89a6aecdc9ac6, type: 3}
+      propertyPath: m_Colors.m_HighlightedColor.r
+      value: 0.2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

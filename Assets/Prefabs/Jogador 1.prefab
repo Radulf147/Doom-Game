@@ -1746,10 +1746,6 @@ PrefabInstance:
       propertyPath: hudManager
       value: 
       objectReference: {fileID: 1448489407720520302}
-    - target: {fileID: 4575800129912630672, guid: d9d96e63112886a48af50245d5467878, type: 3}
-      propertyPath: meleeScript
-      value: 
-      objectReference: {fileID: 8104869680080351495}
     - target: {fileID: 6643097018442860876, guid: d9d96e63112886a48af50245d5467878, type: 3}
       propertyPath: m_Name
       value: Jogador
@@ -1778,40 +1774,10 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6643097018442860876, guid: d9d96e63112886a48af50245d5467878, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8104869680080351495}
     - targetCorrespondingSourceObject: {fileID: 8595896363322788041, guid: d9d96e63112886a48af50245d5467878, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6082841484805839507}
   m_SourcePrefab: {fileID: 100100000, guid: d9d96e63112886a48af50245d5467878, type: 3}
---- !u!1 &1674104255420019326 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6643097018442860876, guid: d9d96e63112886a48af50245d5467878, type: 3}
-  m_PrefabInstance: {fileID: 5407303051842812722}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &8104869680080351495
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1674104255420019326}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 499c7f091a11d1849a93704a7b71d579, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pontoDeAtaque: {fileID: 2280654546058718642}
-  tamanhoDaAreaDeAtaque: {x: 2.5, y: 2, z: 2.5}
-  camadaDoInimigo:
-    serializedVersion: 2
-    m_Bits: 2048
---- !u!4 &2280654546058718642 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6101280457709344384, guid: d9d96e63112886a48af50245d5467878, type: 3}
-  m_PrefabInstance: {fileID: 5407303051842812722}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &4341570418198754299 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8595896363322788041, guid: d9d96e63112886a48af50245d5467878, type: 3}
