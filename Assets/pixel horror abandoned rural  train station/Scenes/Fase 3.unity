@@ -7939,6 +7939,10 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4558799477606511046, guid: 7ee89ef2841e78542baeec134a360c0d, type: 3}
+      propertyPath: m_TagString
+      value: ScoreTextUI
+      objectReference: {fileID: 0}
     - target: {fileID: 9113828879132517805, guid: 7ee89ef2841e78542baeec134a360c0d, type: 3}
       propertyPath: m_Name
       value: Jogador 1
@@ -7953,17 +7957,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4081742454681210593, guid: 7ee89ef2841e78542baeec134a360c0d, type: 3}
   m_PrefabInstance: {fileID: 689797388}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &689797390 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3397546627581045719, guid: 7ee89ef2841e78542baeec134a360c0d, type: 3}
-  m_PrefabInstance: {fileID: 689797388}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!20 &689797391 stripped
 Camera:
   m_CorrespondingSourceObject: {fileID: 6777742270978908665, guid: 7ee89ef2841e78542baeec134a360c0d, type: 3}
@@ -19422,7 +19415,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentScore: 0
-  scoreText: {fileID: 689797390}
 --- !u!4 &1897632864
 Transform:
   m_ObjectHideFlags: 0

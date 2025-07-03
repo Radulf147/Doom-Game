@@ -34,7 +34,7 @@ public class CharacterInitializer : MonoBehaviour
             // Se o personagem tem uma arma (qualquer uma), ativamos o GunScript.
             gunScript.enabled = true;
             gunScript.CarregarDadosDaArma(personagem.dadosDaArma);
-            // gunScript.SetCharacterAbilities(personagem); // Se você ainda usa passivas
+            gunScript.SetCharacterAbilities(personagem); // Se você ainda usa passivas
         }
         else if (gunScript != null)
         {

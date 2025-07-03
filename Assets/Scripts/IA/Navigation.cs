@@ -28,22 +28,19 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
 
     [Header("Configurações de Ataque")]
     public float attackDamage = 15f;
-    public float attackRange = 2.5f; 
-    public float attackAngle = 90f; 
+    public float attackRange = 2.5f;
+    public float attackAngle = 90f;
     public float attackCooldown = 2f;
     private float lastAttackTime;
 
     private NavMeshAgent agent;
-
-    // --- PROPRIEDADES ADICIONADAS DE VOLTA AQUI ---
-    // Estas propriedades permitem que outros scripts leiam os valores do inimigo de forma segura.
+    
     public DetectionState CurrentState => currentState;
     public float DetectionRadius => detectionRange;
     public float LoseChaseRadius => loseChaseRange;
     public float AttackRadius => attackRange;
     public float AttackAngle => attackAngle;
     public bool IsDead => isDead;
-    // --- FIM DA ADIÇÃO ---
 
     void Awake()
     {
@@ -67,10 +64,7 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
             agent.stoppingDistance = attackRange * 0.8f;
         }
     }
-
-    // O resto do seu script (OnEnable, Start, Update, TakeDamage, Die, etc.) permanece o mesmo.
-    // Incluído abaixo para que você possa copiar e colar tudo de uma vez.
-    #region Métodos Inalterados
+    
     void OnEnable()
     {
         isDead = false;
@@ -84,16 +78,17 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
         if (agent != null)
         {
             agent.enabled = true;
-            // agent.isStopped = true;
             agent.avoidancePriority = UnityEngine.Random.Range(40, 60);
         }
     }
+
     void Start()
     {
         currentHealth = maxHealth;
         lastAttackTime = -attackCooldown;
         currentState = DetectionState.Idle;
     }
+
     void Update()
     {
         if (isDead || player == null || agent == null || !agent.enabled || !agent.isOnNavMesh) return;
@@ -105,23 +100,36 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
             animator.SetBool("IsMoving", isMoving);
         }
     }
+    
     public bool TakeDamage(float amount, Vector3 hitPoint, Vector3 hitDirection, HitType hitType)
     {
-        if (isDead) return false;
+        Debug.Log($"<color=#FF8C00><b>-- CHECKPOINT 4: TakeDamage CHAMADO em '{gameObject.name}' --</b></color>"); // LARANJA
+
+        if (isDead)
+        {
+            Debug.LogWarning("--> Alvo já estava morto. Retornando 'false'.");
+            return false;
+        }
+
         currentHealth -= amount;
+        Debug.Log($"--> Vida: {currentHealth + amount} -> {currentHealth}");
         lastHitType = hitType;
         if (emissorSangue != null)
         {
             emissorSangue.EmitirSangueEmPonto(hitPoint, -hitDirection);
         }
+
         if (currentHealth <= 0)
         {
-            currentHealth = 0;
+            Debug.Log("<color=#FF8C00><b>--> MORTE CONFIRMADA. Retornando 'true'.</b></color>");
             Die();
             return true;
         }
+
+        Debug.Log("--> Sobreviveu. Retornando 'false'.");
         return false;
     }
+
     void Die()
     {
         if (isDead) return;
@@ -133,6 +141,7 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
         if (animator != null) animator.SetTrigger("IsDead");
         Destroy(gameObject, 5f);
     }
+
     void HandleDetectionAndChase()
     {
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
@@ -166,16 +175,17 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
             }
         }
     }
+
     void HandleAttacking()
     {
         if (currentState != DetectionState.Detected || Time.time < lastAttackTime + attackCooldown || (agent != null && !agent.isStopped)) return;
-        
+
         if (Vector3.Distance(transform.position, player.position) <= attackRange)
         {
             Vector3 directionToPlayer = (player.position - transform.position);
             directionToPlayer.y = 0;
             transform.rotation = Quaternion.LookRotation(directionToPlayer);
-            
+
             float angle = Vector3.Angle(transform.forward, directionToPlayer.normalized);
             if (angle <= attackAngle / 2f)
             {
@@ -184,11 +194,11 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
             }
         }
     }
+
     void PerformAttack()
     {
-        if(animator != null) animator.SetTrigger("IsAttacking");
+        if (animator != null) animator.SetTrigger("IsAttacking");
         PlayerHealth playerHealthComponent = player.GetComponent<PlayerHealth>();
         if (playerHealthComponent != null) playerHealthComponent.TakeDamage(attackDamage);
     }
-    #endregion
 }

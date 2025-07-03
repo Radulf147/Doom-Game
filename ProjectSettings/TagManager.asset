@@ -10,6 +10,7 @@ TagManager:
   - TrainPrepared
   - TrainRepaired
   - Train
+  - ScoreTextUI
   layers:
   - Default
   - TransparentFX

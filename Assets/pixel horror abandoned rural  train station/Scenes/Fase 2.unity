@@ -9064,6 +9064,10 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4558799477606511046, guid: 7ee89ef2841e78542baeec134a360c0d, type: 3}
+      propertyPath: m_TagString
+      value: ScoreTextUI
+      objectReference: {fileID: 0}
     - target: {fileID: 9113828879132517805, guid: 7ee89ef2841e78542baeec134a360c0d, type: 3}
       propertyPath: m_Name
       value: Jogador 1
@@ -12878,7 +12882,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentScore: 0
-  scoreText: {fileID: 1993363893}
 --- !u!4 &1897632864
 Transform:
   m_ObjectHideFlags: 0
@@ -13079,17 +13082,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1986588775}
   m_CullTransparentMesh: 1
---- !u!114 &1993363893 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3397546627581045719, guid: 7ee89ef2841e78542baeec134a360c0d, type: 3}
-  m_PrefabInstance: {fileID: 1216183008}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &1996191989
 PrefabInstance:
   m_ObjectHideFlags: 0

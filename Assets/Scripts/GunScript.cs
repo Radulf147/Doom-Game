@@ -22,7 +22,7 @@ public class GunScript : MonoBehaviour
     private float duracaoBaseAnimTiro;
     private float duracaoVisualRecarga;
     private float duracaoBaseAnimRecarga;
-    private float espacamentoVertical; // <-- Nova variável interna
+    private float espacamentoVertical;
     private bool characterHasMultiKillAbility = false;
 
     // --- Variáveis de estado ---
@@ -55,7 +55,7 @@ public class GunScript : MonoBehaviour
         this.alcance = data.alcanceDaArma;
         this.projeteisPorTiro = data.projeteisPorTiro;
         this.fatorDeDispersao = data.fatorDeDispersao;
-        this.espacamentoVertical = data.espacamentoVertical; // <-- Carrega o novo dado
+        this.espacamentoVertical = data.espacamentoVertical;
         this.tempoDeRecarga = data.tempoDeRecarga;
         this.hitEffectPrefab = data.hitEffectPrefab;
         this.municaoPorColeta = data.municaoPorColeta;
@@ -66,7 +66,7 @@ public class GunScript : MonoBehaviour
         this.duracaoVisualTiro = data.duracaoVisualTiro;
         this.duracaoBaseAnimRecarga = data.duracaoBaseAnimRecarga;
         this.duracaoVisualRecarga = data.duracaoVisualRecarga;
-        
+
         if (hudManager != null)
         {
             hudManager.CarregarAnimadorDaArma(this.animadorDaArma);
@@ -78,105 +78,120 @@ public class GunScript : MonoBehaviour
         this.municaoNaReserva = data.municaoReservaMax;
         AtualizarUI();
     }
-    
-    // MÉTODO FireHitscan ATUALIZADO
+
     private void FireHitscan()
     {
+        Debug.Log("<color=#FFFFFF><b>-- CHECKPOINT 1: FireHitscan INICIADO --</b></color>"); // BRANCO
         municaoNoPente--;
         AtualizarUI();
 
         if (audioSource != null && somDoTiro != null) audioSource.PlayOneShot(somDoTiro);
         if (hudManager != null) hudManager.PlayAnimacaoTiro();
-        
+
         Ray ray = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         int killsThisShot = 0;
 
         for (int i = 0; i < projeteisPorTiro; i++)
         {
             Vector3 direcaoDoTiro = ray.direction;
-
-            // --- LÓGICA DE DISPERSÃO ATUALIZADA ---
-            if (fatorDeDispersao > 0) // Lógica para a espingarda (dispersão aleatória)
+            
+            if (fatorDeDispersao > 0)
             {
                 Vector2 circuloDispersao = Random.insideUnitCircle * fatorDeDispersao;
                 direcaoDoTiro += mainCamera.transform.up * circuloDispersao.y + mainCamera.transform.right * circuloDispersao.x;
             }
-            else if (espacamentoVertical > 0) // NOVA LÓGICA para a Katana (dispersão vertical)
+            else if (espacamentoVertical > 0)
             {
                 float centroDoArco = (projeteisPorTiro - 1) / 2.0f;
                 float offsetVertical = (i - centroDoArco) * espacamentoVertical;
                 direcaoDoTiro += mainCamera.transform.up * offsetVertical;
             }
-            
+
             RaycastHit hitInfo;
             if (Physics.Raycast(ray.origin, direcaoDoTiro, out hitInfo, alcance))
             {
                 bool targetDied = ProcessarImpacto(hitInfo, direcaoDoTiro);
-                if(targetDied)
+                Debug.Log($"<color=#666666><i><-- CHECKPOINT 6: FireHitscan recebeu de volta '{targetDied}'.</i></color>"); // CINZA
+                if (targetDied)
                 {
                     killsThisShot++;
                 }
             }
         }
+        
+        Debug.Log($"<color=#00FF00><b>-- CHECKPOINT 7: CONTAGEM FINAL. Kills: {killsThisShot} | Habilidade Ativa: {characterHasMultiKillAbility} --</b></color>"); // VERDE
 
         if (characterHasMultiKillAbility && killsThisShot > 1)
         {
+            Debug.Log("<color=#00FF00><b>--> SUCESSO! Adicionando Shield!</b></color>");
             PlayerHealth playerHealth = GetComponentInParent<PlayerHealth>();
             if (playerHealth != null)
             {
                 playerHealth.AddShield(10);
             }
+            else
+            {
+                Debug.LogError("Falha Crítica: Não foi possível encontrar PlayerHealth para adicionar o shield!");
+            }
         }
     }
-
+    
     private bool ProcessarImpacto(RaycastHit hitInfo, Vector3 direcaoDoTiro)
     {
+        Debug.Log($"<color=#00FFFF><b>-- CHECKPOINT 2: ProcessarImpacto CHAMADO para '{hitInfo.collider.name}' --</b></color>"); // CIANO
+        
         if (hitEffectPrefab != null)
         {
             Instantiate(hitEffectPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
         }
 
+        bool morreu = false;
         EnemyLimbDamageReceiver limbReceiver = hitInfo.collider.GetComponent<EnemyLimbDamageReceiver>();
         if (limbReceiver != null)
         {
-            bool morreu = limbReceiver.ReceiveHit(dano, hitInfo.point, -direcaoDoTiro.normalized);
+            morreu = limbReceiver.ReceiveHit(dano, hitInfo.point, -direcaoDoTiro.normalized);
             if (morreu && ScoreManager.Instance != null)
             {
                 ScoreManager.Instance.AddScoreForEnemyKill(limbReceiver.limbHitType);
             }
-            return morreu;
         }
         else
         {
             IDamageable damageableObject = hitInfo.collider.GetComponentInParent<IDamageable>();
             if (damageableObject != null)
             {
-                bool morreu = damageableObject.TakeDamage(dano, hitInfo.point, -direcaoDoTiro.normalized, HitType.BodyShot);
+                morreu = damageableObject.TakeDamage(dano, hitInfo.point, -direcaoDoTiro.normalized, HitType.BodyShot);
                 if (morreu && ScoreManager.Instance != null)
                 {
                     ScoreManager.Instance.AddScoreForEnemyKill(HitType.BodyShot);
                 }
-                return morreu;
+            }
+            else
+            {
+                 Debug.LogWarning($"Objeto '{hitInfo.collider.name}' foi atingido mas não tem nenhum script de dano (LimbReceiver ou IDamageable).");
             }
         }
-        return false;
+        return morreu;
     }
 
     public void SetCharacterAbilities(CharacterData charData)
     {
         this.characterHasMultiKillAbility = charData.hasMultiKillShieldAbility;
     }
+
     void OnEnable()
     {
         isReloading = false;
         AtualizarUI();
     }
+
     void Update()
     {
         if (isReloading) return;
         if (Input.GetButton("Fire1") && Time.time >= proximoTiroDisponivel) AttemptToFire();
         if (Input.GetKeyDown(KeyCode.R) && municaoNoPente < tamanhoPente && municaoNaReserva > 0) StartCoroutine(Reload());
     }
+
     private void AttemptToFire()
     {
         if (municaoNoPente > 0)
@@ -189,6 +204,7 @@ public class GunScript : MonoBehaviour
             StartCoroutine(Reload());
         }
     }
+
     IEnumerator Reload()
     {
         isReloading = true;
@@ -202,12 +218,14 @@ public class GunScript : MonoBehaviour
         AtualizarUI();
         isReloading = false;
     }
+
     public void AddAmmo()
     {
         municaoNaReserva += this.municaoPorColeta;
         municaoNaReserva = Mathf.Min(municaoNaReserva, municaoReservaMax);
         AtualizarUI();
     }
+
     private void AtualizarUI()
     {
         if (textoMunicao != null)
