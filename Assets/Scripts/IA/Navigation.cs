@@ -133,29 +133,25 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
 
     void Die()
 {
-    // Se já estiver morto, não faz nada.
     if (isDead) return;
     isDead = true;
 
-    // ==================================================
-    //  LÓGICA DE VITÓRIA DA FASE 3 - ADICIONE AQUI
-    // ==================================================
-    // 1. Pega a cena que está ativa no momento.
-    Scene cenaAtual = SceneManager.GetActiveScene();
-
-    // 2. Verifica se o nome da cena é "Fase 3".
-    if (cenaAtual.name == "Fase 3") // Use o nome EXATO do seu arquivo de cena
+    // ===== NOVO CÓDIGO PARA PARAR O SOM DO BOSS =====
+    AudioSource audioDoInimigo = GetComponent<AudioSource>();
+    if (audioDoInimigo != null)
     {
-        // 3. Se for a Fase 3, encontra o manager da fase.
+        audioDoInimigo.Stop();
+    }
+    // ===============================================
+
+    // Lógica da Fase 3 (que já tínhamos adicionado)
+    Scene cenaAtual = SceneManager.GetActiveScene();
+    if (cenaAtual.name == "Fase 3")
+    {
         FaseTresManager manager = FindObjectOfType<FaseTresManager>();
         if (manager != null)
         {
-            // 4. Avisa ao manager que o chefe foi derrotado!
             manager.ChefeFoiDerrotado();
-        }
-        else
-        {
-            Debug.LogError("O chefe morreu na Fase 3, mas o FaseTresManager não foi encontrado na cena!");
         }
     }
     // ==================================================

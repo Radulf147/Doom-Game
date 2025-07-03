@@ -27,7 +27,7 @@ public class FaseTresManager : MonoBehaviour
     public List<GameObject> uiParaEsconder;
     public Image telaDeVitoriaImage; 
     public TextMeshProUGUI textoPontuacaoFinal; // Referência para o texto da pontuação final
-    
+    public GameObject textoObjetivo;
     // Antigas variáveis do Header "Sistema de Objetivos", movidas para melhor organização
     public TextMeshProUGUI mensagemFinalText;
     public GameObject listItens; 
@@ -183,15 +183,23 @@ public class FaseTresManager : MonoBehaviour
         }
 
         // Esconde a UI do jogo antes de mostrar a tela de vitória
-        foreach (GameObject obj in uiParaEsconder)
-        {
-            if (obj != null) obj.SetActive(false);
-        }
+       foreach (GameObject obj in uiParaEsconder)
+    {
+        if (obj != null) obj.SetActive(false);
+    }
 
-        if (telaDeVitoriaImage != null)
-        {
-            telaDeVitoriaImage.gameObject.SetActive(true);
-        }
+    // ===== NOVO CÓDIGO PARA ESCONDER O OBJETIVO =====
+    if (textoObjetivo != null)
+    {
+        textoObjetivo.SetActive(false);
+    }
+    // ===============================================
+
+    // Ativa a sua Image de vitória
+    if (telaDeVitoriaImage != null)
+    {
+        telaDeVitoriaImage.gameObject.SetActive(true);
+    }
         
         if (textoPontuacaoFinal != null && ScoreManager.Instance != null)
         {

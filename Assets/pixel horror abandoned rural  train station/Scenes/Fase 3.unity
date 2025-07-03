@@ -10203,6 +10203,7 @@ MonoBehaviour:
   - {fileID: 1928909609}
   telaDeVitoriaImage: {fileID: 1708945164}
   textoPontuacaoFinal: {fileID: 996355695}
+  textoObjetivo: {fileID: 1126533838}
   mensagemFinalText: {fileID: 0}
   listItens: {fileID: 0}
 --- !u!1001 &919533605
@@ -17569,7 +17570,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1708945163
 RectTransform:
   m_ObjectHideFlags: 0
