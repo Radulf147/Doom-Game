@@ -56,12 +56,19 @@ public class HUDManager : MonoBehaviour
     {
         if (spriteArmaAnimator != null) spriteArmaAnimator.SetTrigger("Recarregar");
     }
-    
+
     public void AtualizarTextoMunicao(int municaoNoPente, int municaoNaReserva)
     {
         if (textoMunicao != null)
         {
             textoMunicao.text = municaoNoPente + " / " + municaoNaReserva;
+        }
+    }
+    public void MostrarTextoMunicao(bool mostrar)
+    {
+        if (textoMunicao != null)
+        {
+            textoMunicao.gameObject.SetActive(mostrar);
         }
     }
 }
