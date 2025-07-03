@@ -15,7 +15,7 @@ public class CharacterSelection : MonoBehaviour
 
         // Carrega a cena do jogo
 
-        SceneManager.LoadScene("fase1");
+        SceneManager.LoadScene("Fase 3");
 
     }
 
