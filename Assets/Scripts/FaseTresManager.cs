@@ -10,10 +10,22 @@ public class FaseTresManager : MonoBehaviour
     public PlayerFPController playerController;
     public Camera cameraDoJogador;
     public Camera cameraDoBoss;
-    public AudioClip somDeApresentacao;
-
+    
     [Tooltip("Tempo em segundos que a câmera ficará mostrando o chefe.")]
     public float duracaoDaCutscene = 6.0f;
+
+    // --- ALTERAÇÃO AQUI: Novas variáveis para a música da fase ---
+    [Header("Configurações de Áudio")]
+    [Tooltip("Música que tocará durante toda a fase.")]
+    public AudioClip musicaDeFundoFase3;
+    [Tooltip("Som de impacto ou rugido durante a apresentação.")]
+    public AudioClip somDeApresentacao;
+    [Range(0f, 1f)]
+    [Tooltip("O volume máximo que a música de fundo atingirá.")]
+    public float volumeMaximoMusica = 0.8f;
+    [Tooltip("Quanto tempo (em segundos) o volume levará para ir de 0 ao máximo.")]
+    public float duracaoFadeMusica = 5.0f;
+    // --- FIM DA ALTERAÇÃO ---
 
     [Header("Sistema de Fade e UI")]
     [Tooltip("Painel de Imagem UI preto que será usado para o efeito de fade.")]
@@ -24,46 +36,55 @@ public class FaseTresManager : MonoBehaviour
     public List<GameObject> uiParaEsconder;
 
     private AudioSource audioSource;
-
-    // Usamos Awake para garantir que a preparação aconteça antes de qualquer Start.
+    
     void Awake()
     {
-        // Garante que o AudioSource existe
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null) { audioSource = gameObject.AddComponent<AudioSource>(); }
         
-        // --- PREPARAÇÃO INICIAL ---
-        // Desativa o controle do jogador IMEDIATAMENTE.
         if (playerController != null)
         {
             playerController.canMove = false;
         }
 
-        // Garante que a câmera do chefe comece desativada para evitar conflitos.
         if (cameraDoBoss != null)
         {
             cameraDoBoss.gameObject.SetActive(false);
         }
     }
 
-    // Start é chamado quando a cena carrega, após o Awake.
     void Start()
     {
-        // Inicia a cutscene de apresentação do chefe
+        // --- ALTERAÇÃO AQUI: Prepara e inicia a música de fundo ---
+        if (musicaDeFundoFase3 != null)
+        {
+            audioSource.clip = musicaDeFundoFase3;
+            audioSource.loop = true; // Música de fundo deve ser em loop
+            audioSource.volume = 0f; // Começa com volume zero
+            audioSource.Play(); // Começa a tocar (silenciosamente no início)
+        }
+        // --- FIM DA ALTERAÇÃO ---
+
         StartCoroutine(ExecutarCutsceneApresentacao());
     }
 
     private IEnumerator ExecutarCutsceneApresentacao()
     {
         Debug.Log("Iniciando cutscene...");
+        
+        // --- ALTERAÇÃO AQUI: Inicia o fade da música ---
+        // A música começará a aumentar o volume gradualmente ENQUANTO a cutscene acontece.
+        if (musicaDeFundoFase3 != null)
+        {
+            StartCoroutine(FadeAudio(volumeMaximoMusica, duracaoFadeMusica));
+        }
+        // --- FIM DA ALTERAÇÃO ---
 
-        // Esconde a UI principal
         foreach (GameObject obj in uiParaEsconder)
         {
             if (obj != null) obj.SetActive(false);
         }
 
-        // Coloca a tela em preto (fade in instantâneo)
         if (painelDeFade != null)
         {
             painelDeFade.gameObject.SetActive(true);
@@ -74,57 +95,44 @@ public class FaseTresManager : MonoBehaviour
         else
         {
             Debug.LogError("Painel de Fade não foi atribuído no Inspector!", this);
-            // Se não houver painel de fade, a cutscene não funcionará corretamente.
-            // Vamos pular para o final para evitar que o jogador fique travado.
             FinalizarCutscene(); 
-            yield break; // Encerra a coroutine
+            yield break;
         }
 
-        // Troca para a câmera da cutscene (enquanto a tela está preta)
         if (cameraDoJogador != null) cameraDoJogador.enabled = false;
         if (cameraDoBoss != null) cameraDoBoss.gameObject.SetActive(true);
 
         Debug.Log("Câmera trocada para a do chefe. Clareando a tela...");
-        yield return StartCoroutine(Fade(false)); // Clareia a tela
+        yield return StartCoroutine(Fade(false));
 
-        // Toca o som de apresentação do chefe
-        if (somDeApresentacao != null) audioSource.PlayOneShot(somDeApresentacao);
+        // Toca o som de apresentação (um efeito sonoro curto)
+        if (somDeApresentacao != null) audioSource.PlayOneShot(somDeApresentacao, 1f); // Usamos PlayOneShot para não interferir na música
         Debug.Log("Focando no chefe por " + duracaoDaCutscene + " segundos.");
 
         yield return new WaitForSeconds(duracaoDaCutscene);
 
         Debug.Log("Retornando ao jogador. Escurecendo a tela...");
-        yield return StartCoroutine(Fade(true)); // Escurece a tela novamente
+        yield return StartCoroutine(Fade(true));
 
-        // Chama o método para finalizar a cutscene e devolver o controle
         FinalizarCutscene();
     }
     
-    /// <summary>
-    /// Finaliza a cutscene e devolve o controle ao jogador.
-    /// </summary>
     private void FinalizarCutscene()
     {
-        // Troca de volta para a câmera do jogador
         if (cameraDoBoss != null) cameraDoBoss.gameObject.SetActive(false);
         if (cameraDoJogador != null) cameraDoJogador.enabled = true;
 
-        // Devolve o controle ao jogador e reativa a UI
         if (playerController != null) playerController.canMove = true;
         foreach (GameObject obj in uiParaEsconder)
         {
             if (obj != null) obj.SetActive(true);
         }
 
-        // Clareia a tela para o jogador
         StartCoroutine(Fade(false));
         
         Debug.Log("Cutscene do chefe finalizada. Batalha iniciada!");
     }
 
-    /// <summary>
-    /// Coroutine que controla o efeito de fade para preto ou a partir do preto.
-    /// </summary>
     private IEnumerator Fade(bool paraPreto)
     {
         if (painelDeFade == null) yield break;
@@ -151,4 +159,28 @@ public class FaseTresManager : MonoBehaviour
             painelDeFade.gameObject.SetActive(false);
         }
     }
+
+    // --- ALTERAÇÃO AQUI: Nova coroutine para o fade do áudio ---
+    /// <summary>
+    /// Coroutine que aumenta ou diminui o volume do AudioSource gradualmente.
+    /// </summary>
+    /// <param name="targetVolume">O volume final desejado (entre 0 e 1).</param>
+    /// <param name="duration">A duração do fade em segundos.</param>
+    private IEnumerator FadeAudio(float targetVolume, float duration)
+    {
+        float startVolume = audioSource.volume;
+        float timer = 0f;
+
+        while (timer < duration)
+        {
+            // Calcula o novo volume baseado no tempo passado
+            audioSource.volume = Mathf.Lerp(startVolume, targetVolume, timer / duration);
+            timer += Time.deltaTime;
+            yield return null; // Espera até o próximo frame
+        }
+
+        // Garante que o volume final seja exatamente o alvo
+        audioSource.volume = targetVolume;
+    }
+    // --- FIM DA ALTERAÇÃO ---
 }
