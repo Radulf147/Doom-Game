@@ -12461,7 +12461,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5653448688503787983, guid: de703a3aad1be62419043cd790279e99, type: 3}
       propertyPath: m_Name
-      value: Canvas_GameOver (1)
+      value: Canvas_GameOver
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

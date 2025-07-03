@@ -2506,7 +2506,7 @@ MonoBehaviour:
   aiEyeHeight: 0.5
   playerTargetHeight: 0.5
   maxHealth: 100
-  attackDamage: 1
+  attackDamage: 10
   attackRange: 2.5
   attackAngle: 90
   attackCooldown: 2
