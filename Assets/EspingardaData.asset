@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: EspingardaData
   m_EditorClassIdentifier: 
   tipoDeArma: 0
-  dano: 4
+  dano: 40
   cadenciaDeTiro: 1.2
   tempoDeRecarga: 2
   alcanceDaArma: 10
