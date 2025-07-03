@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.SceneManagement;
 
 public class EnemyNavigation : MonoBehaviour, IDamageable
 {
@@ -131,16 +132,45 @@ public class EnemyNavigation : MonoBehaviour, IDamageable
     }
 
     void Die()
+{
+    // Se já estiver morto, não faz nada.
+    if (isDead) return;
+    isDead = true;
+
+    // ==================================================
+    //  LÓGICA DE VITÓRIA DA FASE 3 - ADICIONE AQUI
+    // ==================================================
+    // 1. Pega a cena que está ativa no momento.
+    Scene cenaAtual = SceneManager.GetActiveScene();
+
+    // 2. Verifica se o nome da cena é "Fase 3".
+    if (cenaAtual.name == "Fase 3") // Use o nome EXATO do seu arquivo de cena
     {
-        if (isDead) return;
-        isDead = true;
-        OnEnemyDied?.Invoke(this);
-        if (agent != null) agent.enabled = false;
-        Collider[] allColliders = GetComponentsInChildren<Collider>();
-        foreach (Collider col in allColliders) col.enabled = false;
-        if (animator != null) animator.SetTrigger("IsDead");
-        Destroy(gameObject, 5f);
+        // 3. Se for a Fase 3, encontra o manager da fase.
+        FaseTresManager manager = FindObjectOfType<FaseTresManager>();
+        if (manager != null)
+        {
+            // 4. Avisa ao manager que o chefe foi derrotado!
+            manager.ChefeFoiDerrotado();
+        }
+        else
+        {
+            Debug.LogError("O chefe morreu na Fase 3, mas o FaseTresManager não foi encontrado na cena!");
+        }
     }
+    // ==================================================
+
+    // Código de morte que já existia (continua funcionando normalmente)
+    OnEnemyDied?.Invoke(this);
+    if (agent != null) agent.enabled = false;
+    
+    Collider[] allColliders = GetComponentsInChildren<Collider>();
+    foreach (Collider col in allColliders) col.enabled = false;
+    
+    if (animator != null) animator.SetTrigger("IsDead");
+    
+    Destroy(gameObject, 5f);
+}
 
     void HandleDetectionAndChase()
     {

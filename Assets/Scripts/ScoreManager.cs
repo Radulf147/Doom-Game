@@ -9,6 +9,8 @@ public class ScoreManager : MonoBehaviour
 
     [Header("Configuração de Pontuação")]
     public int currentScore = 0;
+
+    
     
     // A referência agora pode ser privada, pois vamos encontrá-la via código
     private TextMeshProUGUI scoreText; 

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class FaseTresManager : MonoBehaviour
 {
@@ -10,30 +11,26 @@ public class FaseTresManager : MonoBehaviour
     public PlayerFPController playerController;
     public Camera cameraDoJogador;
     public Camera cameraDoBoss;
-    
-    [Tooltip("Tempo em segundos que a câmera ficará mostrando o chefe.")]
     public float duracaoDaCutscene = 6.0f;
 
-    // --- ALTERAÇÃO AQUI: Novas variáveis para a música da fase ---
     [Header("Configurações de Áudio")]
-    [Tooltip("Música que tocará durante toda a fase.")]
     public AudioClip musicaDeFundoFase3;
-    [Tooltip("Som de impacto ou rugido durante a apresentação.")]
     public AudioClip somDeApresentacao;
+    public AudioClip somDeVitoria; 
     [Range(0f, 1f)]
-    [Tooltip("O volume máximo que a música de fundo atingirá.")]
     public float volumeMaximoMusica = 0.8f;
-    [Tooltip("Quanto tempo (em segundos) o volume levará para ir de 0 ao máximo.")]
     public float duracaoFadeMusica = 5.0f;
-    // --- FIM DA ALTERAÇÃO ---
 
     [Header("Sistema de Fade e UI")]
-    [Tooltip("Painel de Imagem UI preto que será usado para o efeito de fade.")]
     public Image painelDeFade;
-    [Tooltip("Duração do fade in e fade out.")]
     public float duracaoFade = 2.0f;
-    [Tooltip("Opcional: Elementos da UI principal que devem ser escondidos durante a cutscene.")]
     public List<GameObject> uiParaEsconder;
+    public Image telaDeVitoriaImage; 
+    public TextMeshProUGUI textoPontuacaoFinal; // Referência para o texto da pontuação final
+    
+    // Antigas variáveis do Header "Sistema de Objetivos", movidas para melhor organização
+    public TextMeshProUGUI mensagemFinalText;
+    public GameObject listItens; 
 
     private AudioSource audioSource;
     
@@ -55,15 +52,18 @@ public class FaseTresManager : MonoBehaviour
 
     void Start()
     {
-        // --- ALTERAÇÃO AQUI: Prepara e inicia a música de fundo ---
         if (musicaDeFundoFase3 != null)
         {
             audioSource.clip = musicaDeFundoFase3;
-            audioSource.loop = true; // Música de fundo deve ser em loop
-            audioSource.volume = 0f; // Começa com volume zero
-            audioSource.Play(); // Começa a tocar (silenciosamente no início)
+            audioSource.loop = true;
+            audioSource.volume = 0f;
+            audioSource.Play();
         }
-        // --- FIM DA ALTERAÇÃO ---
+        
+        if (telaDeVitoriaImage != null)
+        {
+            telaDeVitoriaImage.gameObject.SetActive(false);
+        }
 
         StartCoroutine(ExecutarCutsceneApresentacao());
     }
@@ -71,14 +71,10 @@ public class FaseTresManager : MonoBehaviour
     private IEnumerator ExecutarCutsceneApresentacao()
     {
         Debug.Log("Iniciando cutscene...");
-        
-        // --- ALTERAÇÃO AQUI: Inicia o fade da música ---
-        // A música começará a aumentar o volume gradualmente ENQUANTO a cutscene acontece.
         if (musicaDeFundoFase3 != null)
         {
             StartCoroutine(FadeAudio(volumeMaximoMusica, duracaoFadeMusica));
         }
-        // --- FIM DA ALTERAÇÃO ---
 
         foreach (GameObject obj in uiParaEsconder)
         {
@@ -87,62 +83,54 @@ public class FaseTresManager : MonoBehaviour
 
         if (painelDeFade != null)
         {
-            painelDeFade.gameObject.SetActive(true);
-            Color corDoPainel = painelDeFade.color;
-            corDoPainel.a = 1f;
-            painelDeFade.color = corDoPainel;
+            yield return StartCoroutine(Fade(true)); // Escurece
+            if (cameraDoJogador != null) cameraDoJogador.enabled = false;
+            if (cameraDoBoss != null) cameraDoBoss.gameObject.SetActive(true);
+            yield return StartCoroutine(Fade(false)); // Clareia
         }
         else
         {
-            Debug.LogError("Painel de Fade não foi atribuído no Inspector!", this);
-            FinalizarCutscene(); 
-            yield break;
+            if (cameraDoJogador != null) cameraDoJogador.enabled = false;
+            if (cameraDoBoss != null) cameraDoBoss.gameObject.SetActive(true);
         }
 
-        if (cameraDoJogador != null) cameraDoJogador.enabled = false;
-        if (cameraDoBoss != null) cameraDoBoss.gameObject.SetActive(true);
-
-        Debug.Log("Câmera trocada para a do chefe. Clareando a tela...");
-        yield return StartCoroutine(Fade(false));
-
-        // Toca o som de apresentação (um efeito sonoro curto)
-        if (somDeApresentacao != null) audioSource.PlayOneShot(somDeApresentacao, 1f); // Usamos PlayOneShot para não interferir na música
+        if (somDeApresentacao != null) audioSource.PlayOneShot(somDeApresentacao, 1f);
         Debug.Log("Focando no chefe por " + duracaoDaCutscene + " segundos.");
-
         yield return new WaitForSeconds(duracaoDaCutscene);
-
-        Debug.Log("Retornando ao jogador. Escurecendo a tela...");
-        yield return StartCoroutine(Fade(true));
 
         FinalizarCutscene();
     }
     
     private void FinalizarCutscene()
     {
+        StartCoroutine(FadeAndSwitchBack());
+    }
+
+    private IEnumerator FadeAndSwitchBack()
+    {
+        if (painelDeFade != null) yield return StartCoroutine(Fade(true)); // Escurece
+
         if (cameraDoBoss != null) cameraDoBoss.gameObject.SetActive(false);
         if (cameraDoJogador != null) cameraDoJogador.enabled = true;
-
         if (playerController != null) playerController.canMove = true;
+
         foreach (GameObject obj in uiParaEsconder)
         {
             if (obj != null) obj.SetActive(true);
         }
 
-        StartCoroutine(Fade(false));
-        
+        if (painelDeFade != null) yield return StartCoroutine(Fade(false)); // Clareia
         Debug.Log("Cutscene do chefe finalizada. Batalha iniciada!");
     }
 
     private IEnumerator Fade(bool paraPreto)
     {
         if (painelDeFade == null) yield break;
-
         painelDeFade.gameObject.SetActive(true);
         float startAlpha = paraPreto ? 0f : 1f;
         float endAlpha = paraPreto ? 1f : 0f;
         Color corDoPainel = painelDeFade.color;
         float timer = 0f;
-
         while (timer < duracaoFade)
         {
             corDoPainel.a = Mathf.Lerp(startAlpha, endAlpha, timer / duracaoFade);
@@ -150,37 +138,71 @@ public class FaseTresManager : MonoBehaviour
             timer += Time.deltaTime;
             yield return null;
         }
-
         corDoPainel.a = endAlpha;
         painelDeFade.color = corDoPainel;
-
-        if (!paraPreto)
+        if (!paraPreto && endAlpha == 0f)
         {
             painelDeFade.gameObject.SetActive(false);
         }
     }
 
-    // --- ALTERAÇÃO AQUI: Nova coroutine para o fade do áudio ---
-    /// <summary>
-    /// Coroutine que aumenta ou diminui o volume do AudioSource gradualmente.
-    /// </summary>
-    /// <param name="targetVolume">O volume final desejado (entre 0 e 1).</param>
-    /// <param name="duration">A duração do fade em segundos.</param>
     private IEnumerator FadeAudio(float targetVolume, float duration)
     {
         float startVolume = audioSource.volume;
         float timer = 0f;
-
         while (timer < duration)
         {
-            // Calcula o novo volume baseado no tempo passado
             audioSource.volume = Mathf.Lerp(startVolume, targetVolume, timer / duration);
             timer += Time.deltaTime;
-            yield return null; // Espera até o próximo frame
+            yield return null;
         }
-
-        // Garante que o volume final seja exatamente o alvo
         audioSource.volume = targetVolume;
     }
-    // --- FIM DA ALTERAÇÃO ---
+
+    // ===== FUNÇÕES DE VITÓRIA E BOTÕES =====
+
+    public void ChefeFoiDerrotado()
+    {
+        Debug.Log("O CHEFE FOI DERROTADO! VITÓRIA!");
+        audioSource.Stop();
+
+        if (somDeVitoria != null)
+        {
+            audioSource.PlayOneShot(somDeVitoria);
+        }
+
+        // Esconde a UI do jogo antes de mostrar a tela de vitória
+        foreach (GameObject obj in uiParaEsconder)
+        {
+            if (obj != null) obj.SetActive(false);
+        }
+
+        if (telaDeVitoriaImage != null)
+        {
+            telaDeVitoriaImage.gameObject.SetActive(true);
+        }
+        
+        if (textoPontuacaoFinal != null && ScoreManager.Instance != null)
+        {
+            int pontuacao = ScoreManager.Instance.currentScore;
+            textoPontuacaoFinal.text = "Pontuação Final: " + pontuacao;
+            textoPontuacaoFinal.gameObject.SetActive(true);
+        }
+
+        Time.timeScale = 0f;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
+    public void VoltarAoMenu()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("TelaInicial");
+    }
+
+    public void SairDoJogo()
+    {
+        Time.timeScale = 1f;
+        Application.Quit();
+    }
 }
