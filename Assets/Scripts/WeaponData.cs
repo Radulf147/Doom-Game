@@ -37,7 +37,7 @@ public class WeaponData : ScriptableObject
     public AnimatorOverrideController animadorDaArma;
     public AudioClip somDoTiro;
     public AudioClip somDaRecarga;
-    
+
     [Header("Controle de Tempo Visual das Animações")]
     public float duracaoBaseAnimTiro = 1f;
     public float duracaoVisualTiro = 0.2f;

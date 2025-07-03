@@ -14,6 +14,7 @@ public class CharacterData : ScriptableObject
     public float taxaDeAtaque = 1f; // Modificador. 1.1f = 10% mais rápido
     public bool regeneraVida = false;
     public bool hasMultiKillShieldAbility = false;
+    public bool temPassivaUltimoTiro = false;
 
     [Header("Dados da Arma")]
     public WeaponData dadosDaArma; // Referência para outra ficha, só da arma!
