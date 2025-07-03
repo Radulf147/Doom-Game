@@ -39,6 +39,8 @@ public class GunScript : MonoBehaviour
     private Camera mainCamera;
     private AudioSource audioSource;
 
+    public WeaponData dadosDaArma;
+
     void Awake()
     {
         hudManager = FindFirstObjectByType<HUDManager>();
@@ -48,6 +50,7 @@ public class GunScript : MonoBehaviour
 
     public void CarregarDadosDaArma(WeaponData data)
     {
+        dadosDaArma = data;
         this.dano = data.dano;
         this.cadencia = data.cadenciaDeTiro;
         this.tamanhoPente = data.tamanhoDoPente;
@@ -228,9 +231,20 @@ public class GunScript : MonoBehaviour
 
     private void AtualizarUI()
     {
-        if (textoMunicao != null)
+        if (hudManager == null) return;
+
+        // Verifica se a arma equipada deve mostrar a munição
+        if (dadosDaArma != null && dadosDaArma.municaoReservaMax > 0)
         {
-            textoMunicao.text = municaoNoPente + " / " + municaoNaReserva;
+            // Se tiver um pente, mostra a UI e atualiza os valores
+            hudManager.MostrarTextoMunicao(true);
+            hudManager.AtualizarTextoMunicao(municaoNoPente, municaoNaReserva);
+        }
+        else
+        {
+            // Se não tiver um pente (Katana), esconde a UI
+            hudManager.MostrarTextoMunicao(false);
         }
     }
+    
 }

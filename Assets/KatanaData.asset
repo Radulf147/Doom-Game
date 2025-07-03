@@ -21,8 +21,8 @@ MonoBehaviour:
   fatorDeDispersao: 0
   espacamentoVertical: 0.2
   tamanhoDoPente: 99999
-  municaoReservaMax: 99999
-  municaoPorColeta: 12
+  municaoReservaMax: 0
+  municaoPorColeta: 0
   hitEffectPrefab: {fileID: 0}
   animadorDaArma: {fileID: 22100000, guid: aedba1cebf391a14888108330cb93ec9, type: 2}
   somDoTiro: {fileID: 8300000, guid: 6273f34811010da4e83a67811e21ae84, type: 3}
